@@ -1,3 +1,6 @@
+// è¿™ä¸¤ä»½ä»£ç é™¤äº†ipåœ°å€å’Œç«¯å£å·å¤–å…¶å®ƒéƒ½æ˜¯ä¸€æ ·çš„ã€‚å› ä¸ºUDPä¸åŒºåˆ†å®¢æˆ·ç«¯å’ŒæœåŠ¡ç«¯
+//P133é¡µï¼›P106é¡µ
+
 #include "stdio.h"
 #include "winsock2.h"
 #pragma comment(lib,"ws2_32.lib")
@@ -44,14 +47,14 @@ void main(void)
 		return;
 	}
 
-	printf("\n±¾µØÁÄÌì³ÌĞòÆô¶¯³É¹¦£¬°ó¶¨µ½ %s:%d\n",inet_ntoa(addrMe.sin_addr),ntohs(addrMe.sin_port));
+	printf("\næœ¬åœ°èŠå¤©ç¨‹åºå¯åŠ¨æˆåŠŸï¼Œç»‘å®šåˆ° %s:%d\n",inet_ntoa(addrMe.sin_addr),ntohs(addrMe.sin_port));
 
 	addrTo.sin_family=AF_INET;
 	addrTo.sin_addr.S_un.S_addr=inet_addr(IPTO);
 	addrTo.sin_port=htons(PORTTO);
-	printf("\n×¼±¸ºÍ %s:%d ÁÄÌì\n",inet_ntoa(addrTo.sin_addr),ntohs(addrTo.sin_port));
+	printf("\nå‡†å¤‡å’Œ %s:%d èŠå¤©\n",inet_ntoa(addrTo.sin_addr),ntohs(addrTo.sin_port));
 
-	printf("\nÇëÊäÈëÁÄÌìĞÅÏ¢:\n");
+	printf("\nè¯·è¾“å…¥èŠå¤©ä¿¡æ¯:\n");
 	memset(sendBuf,0,sizeof(sendBuf));
 	scanf("%s",sendBuf);
 	len=sizeof(sockaddr);
@@ -66,8 +69,8 @@ void main(void)
 		return;
 	}
 
-	printf("\nÏò¶Ô·½·¢ËÍÒÔÏÂĞÅÏ¢³É¹¦:\n%s\n",sendBuf);
-	printf("\n×¼±¸½ÓÊÕĞÅÏ¢(²»Ò»¶¨ÊÇ¶Ô·½·¢À´µÄ£¡)\n");
+	printf("\nå‘å¯¹æ–¹å‘é€ä»¥ä¸‹ä¿¡æ¯æˆåŠŸ:\n%s\n",sendBuf);
+	printf("\nå‡†å¤‡æ¥æ”¶ä¿¡æ¯(ä¸ä¸€å®šæ˜¯å¯¹æ–¹å‘æ¥çš„ï¼)\n");
 
 	memset(recvBuf,0,sizeof(recvBuf));
 	len=sizeof(sockaddr);
@@ -81,7 +84,7 @@ void main(void)
 		return;
 	}
 
-	printf("\n³É¹¦ÊÕµ½%s:%d·¢ËÍµÄÒÔÏÂĞÅÏ¢:\n%s\n",inet_ntoa(addr.sin_addr),ntohs(addr.sin_port),recvBuf);
+	printf("\næˆåŠŸæ”¶åˆ°%s:%då‘é€çš„ä»¥ä¸‹ä¿¡æ¯:\n%s\n",inet_ntoa(addr.sin_addr),ntohs(addr.sin_port),recvBuf);
 
 	printf("\n");
 	closesocket(sockMe);  

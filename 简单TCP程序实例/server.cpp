@@ -62,6 +62,7 @@ int main(void)
 	// 获得ip地址：inet_ntoa(addrClient.sin_addr)；获得客户端端口：ntohs(addrClient.sin_port)
 	*/
 	
+	//getsockname()获得本机的ip和端口
 	
 	if (INVALID_SOCKET==sockTongxun)
 	{

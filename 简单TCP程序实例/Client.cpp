@@ -13,14 +13,14 @@ int main(void)
 	ret=WSAStartup(MAKEWORD(2,2),&data);
 	if (SOCKET_ERROR==ret)
 	{
-		printf("WSAStartup ´íÎó");
+		printf("WSAStartup é”™è¯¯");
 		return -1;
 	}
 
 	sockClient=socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
 	if (INVALID_SOCKET==sockClient)
 	{
-		printf("socket ´íÎó");
+		printf("socket é”™è¯¯");
 		WSACleanup();
 		return -2;
 	}
@@ -32,45 +32,45 @@ int main(void)
 	addrServer.sin_port=htons(SERVERPORT);
 	len=sizeof(sockaddr);
 
-	printf("¿Í»§¶Ë³õÊ¼»¯Íê³É£¬ÕıÔÚÁ¬½Ó·şÎñÆ÷\n\n");
+	printf("å®¢æˆ·ç«¯åˆå§‹åŒ–å®Œæˆï¼Œæ­£åœ¨è¿æ¥æœåŠ¡å™¨\n\n");
 	ret=connect(sockClient,(sockaddr*)&addrServer,len);
 	if (SOCKET_ERROR==ret)
 	{
-		printf("connect ´íÎó");
+		printf("connect é”™è¯¯");
 		closesocket(sockClient);
 		WSACleanup();
 		return -3;
 	}
 
-	printf("Á¬½Ó·şÎñÆ÷³É¹¦£¬ÏÂÃæ¿ªÊ¼Í¨ĞÅ...\n\n");
+	printf("è¿æ¥æœåŠ¡å™¨æˆåŠŸï¼Œä¸‹é¢å¼€å§‹é€šä¿¡...\n\n");
 
 	memset(recvBuf,0,sizeof(recvBuf));
 	ret=recv(sockClient,recvBuf,sizeof(recvBuf),0);
 	if (SOCKET_ERROR==ret)
 	{
-		printf("recv ´íÎó");
+		printf("recv é”™è¯¯");
 		closesocket(sockClient);
 		WSACleanup();
 		return -4;
 	}
 
-	printf("´Ó·şÎñÆ÷ÊÕµ½ÒÔÏÂĞÅÏ¢:\n%s\n\n",recvBuf);
+	printf("ä»æœåŠ¡å™¨æ”¶åˆ°ä»¥ä¸‹ä¿¡æ¯:\n%s\n\n",recvBuf);
 
 	memset(sendBuf,0,sizeof(sendBuf));
-	strcpy(sendBuf,"I am ¿Í»§¶Ë");
+	strcpy(sendBuf,"I am å®¢æˆ·ç«¯");
 	ret=send(sockClient,sendBuf,strlen(sendBuf)+1,0);
 	if (SOCKET_ERROR==ret)
 	{
-		printf("send ´íÎó");
+		printf("send é”™è¯¯");
 		closesocket(sockClient);
 		WSACleanup();
 		return -5;
 	}
 
-	printf("³É¹¦Ïò·şÎñÆ÷·¢ËÍÒÔÏÂĞÅÏ¢:\n%s\n\n",sendBuf);
+	printf("æˆåŠŸå‘æœåŠ¡å™¨å‘é€ä»¥ä¸‹ä¿¡æ¯:\n%s\n\n",sendBuf);
 
 	closesocket(sockClient);
 	WSACleanup();
 	system("pause");
-	return 0;
+	return 0;//tt
 }

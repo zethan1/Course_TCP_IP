@@ -3,7 +3,7 @@
 #pragma comment(lib,"ws2_32.lib")
 #define SERVERIP    "127.0.0.1"
 #define SERVERPORT  6666
-int main(void)//ww
+int main(void)
 {
 	int ret;
 	char sendBuf[512],recvBuf[512];
@@ -43,7 +43,7 @@ int main(void)//ww
 	ret=listen(sockListen,1);
 	if (SOCKET_ERROR==ret)
 	{
-		printf("listen 错误");
+		printf("listen 错误");//可以用WSAGetLastError()可以看错误码出错的原因是什么
 		closesocket(sockListen);
 		WSACleanup();
 		return -4;

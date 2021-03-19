@@ -54,6 +54,15 @@ int main(void)
 	struct sockaddr_in addrClient;
 	len=sizeof(sockaddr);
 	sockTongxun=accept(sockListen,(sockaddr*)&addrClient,&len);
+	//将(sockaddr*)&addrClient改为NULL，即不用这个值；&len也可以写成0；同样可以运行
+	//sockaddr*)&addrClient 是对方的地址信息
+	/*
+	// 可以用getpeername来获得地址
+	// getpeername(sockTongxun, (sockaddr*)&addrClient, &len);
+	// 获得ip地址：inet_ntoa(addrClient.sin_addr)；获得客户端端口：ntohs(addrClient.sin_port)
+	*/
+	
+	
 	if (INVALID_SOCKET==sockTongxun)
 	{
 		printf("accept 错误");
@@ -64,7 +73,7 @@ int main(void)
 
 	printf("接收一个客户端连接，下面开始通信\n\n");
 
-	memset(sendBuf,0,sizeof(sendBuf));
+	memset(sendBuf,0,sizeof(sendBuf));  //好习惯，初始化数据清零，不然可能出现乱码
 
 	strcpy(sendBuf,"Welcome to tcpserver");
 	ret=send(sockTongxun,sendBuf,strlen(sendBuf)+1,0);

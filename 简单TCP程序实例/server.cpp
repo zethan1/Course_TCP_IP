@@ -3,7 +3,7 @@
 #pragma comment(lib,"ws2_32.lib")
 #define SERVERIP    "127.0.0.1"
 #define SERVERPORT  6666
-int main(void)
+int main(void)//ww
 {
 	int ret;
 	char sendBuf[512],recvBuf[512];
@@ -13,14 +13,14 @@ int main(void)
 	ret=WSAStartup(MAKEWORD(2,2),&data);
 	if (SOCKET_ERROR==ret)
 	{
-		printf("WSAStartup ´íÎó");
+		printf("WSAStartup é”™è¯¯");
 		return -1;
 	}
 
 	sockListen=socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
 	if (INVALID_SOCKET==sockListen)
 	{
-		printf("socket ´íÎó");
+		printf("socket é”™è¯¯");
 		WSACleanup();
 		return -2;
 	}
@@ -34,7 +34,7 @@ int main(void)
 	ret=bind(sockListen,(sockaddr*)&addrServer,len);
 	if (SOCKET_ERROR==ret)
 	{
-		printf("bind ´íÎó");
+		printf("bind é”™è¯¯");
 		closesocket(sockListen);
 		WSACleanup();
 		return -3;
@@ -43,26 +43,26 @@ int main(void)
 	ret=listen(sockListen,1);
 	if (SOCKET_ERROR==ret)
 	{
-		printf("listen ´íÎó");
+		printf("listen é”™è¯¯");
 		closesocket(sockListen);
 		WSACleanup();
 		return -4;
 	}
 
-	printf("·şÎñÆ÷Æô¶¯³É¹¦£¬ÕıÔÚ¼àÌı...\n\n");
+	printf("æœåŠ¡å™¨å¯åŠ¨æˆåŠŸï¼Œæ­£åœ¨ç›‘å¬...\n\n");
 
 	struct sockaddr_in addrClient;
 	len=sizeof(sockaddr);
 	sockTongxun=accept(sockListen,(sockaddr*)&addrClient,&len);
 	if (INVALID_SOCKET==sockTongxun)
 	{
-		printf("accept ´íÎó");
+		printf("accept é”™è¯¯");
 		closesocket(sockListen);
 		WSACleanup();
 		return -5;
 	}
 
-	printf("½ÓÊÕÒ»¸ö¿Í»§¶ËÁ¬½Ó£¬ÏÂÃæ¿ªÊ¼Í¨ĞÅ\n\n");
+	printf("æ¥æ”¶ä¸€ä¸ªå®¢æˆ·ç«¯è¿æ¥ï¼Œä¸‹é¢å¼€å§‹é€šä¿¡\n\n");
 
 	memset(sendBuf,0,sizeof(sendBuf));
 
@@ -70,27 +70,27 @@ int main(void)
 	ret=send(sockTongxun,sendBuf,strlen(sendBuf)+1,0);
 	if (SOCKET_ERROR==ret)
 	{
-		printf("send ´íÎó");
+		printf("send é”™è¯¯");
 		closesocket(sockListen);
 		closesocket(sockTongxun);
 		WSACleanup();
 		return -6;
 	}
 
-	printf("Ïò¿Í»§¶Ë³É¹¦·¢ËÍÒÔÏÂĞÅÏ¢:\n%s\n\n",sendBuf);
+	printf("å‘å®¢æˆ·ç«¯æˆåŠŸå‘é€ä»¥ä¸‹ä¿¡æ¯:\n%s\n\n",sendBuf);
 
 	memset(recvBuf,0,sizeof(recvBuf));
 	ret=recv(sockTongxun,recvBuf,sizeof(recvBuf),0);
 	if (SOCKET_ERROR==ret)
 	{
-		printf("recv ´íÎó");
+		printf("recv é”™è¯¯");
 		closesocket(sockListen);
 		closesocket(sockTongxun);
 		WSACleanup();
 		return -7;
 	}
 
-	printf("´Ó¿Í»§¶ËÊÕµ½ÒÔÏÂĞÅÏ¢:\n%s\n\n",recvBuf);
+	printf("ä»å®¢æˆ·ç«¯æ”¶åˆ°ä»¥ä¸‹ä¿¡æ¯:\n%s\n\n",recvBuf);
 
 	closesocket(sockListen);
 	closesocket(sockTongxun);

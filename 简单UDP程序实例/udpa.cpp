@@ -1,6 +1,9 @@
 // 这两份代码除了ip地址和端口号外其它都是一样的。因为UDP不区分客户端和服务端
 //P133页；P106页
 
+//接收端没开启也能发送成功
+//接收端过久才开可能接收不到信息
+
 #include "stdio.h"
 #include "winsock2.h"
 #pragma comment(lib,"ws2_32.lib")

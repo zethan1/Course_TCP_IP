@@ -1,4 +1,6 @@
-﻿#include "winsock2.h"
+//在应用层
+
+#include "winsock2.h"
 #include "stdio.h"
 #define  BUFSIZE  1024
 #define LOOPCOUNT  100

@@ -48,18 +48,18 @@ void main(void)
 
 
 	bool optval=true;
-	setsockopt(sockMe,SOL_SOCKET,SO_BROADCAST,(char*)&optval,sizeof(bool));
+	setsockopt(sockMe,SOL_SOCKET,SO_BROADCAST,(char*)&optval,sizeof(bool)); //ä¹¦P167
 
-	printf("\n±¾µØÁÄÌì³ÌĞòÆô¶¯³É¹¦£¬°ó¶¨µ½ %s:%d\n",inet_ntoa(addrMe.sin_addr),ntohs(addrMe.sin_port));
+	printf("\næœ¬åœ°èŠå¤©ç¨‹åºå¯åŠ¨æˆåŠŸï¼Œç»‘å®šåˆ° %s:%d\n",inet_ntoa(addrMe.sin_addr),ntohs(addrMe.sin_port));
 
 	addrBroadcast.sin_family=AF_INET;
 	addrBroadcast.sin_addr.S_un.S_addr=inet_addr(BROADCASTIP);
 	addrBroadcast.sin_port=htons(PORT);
-	printf("\n×¼±¸·¢ËÍ¹ã²¥ÏûÏ¢,ÊäÈë00ÍË³ö");
+	printf("\nå‡†å¤‡å‘é€å¹¿æ’­æ¶ˆæ¯,è¾“å…¥00é€€å‡º");
 
 	while (true)
 	{
-	printf("\nÇëÊäÈëÁÄÌìĞÅÏ¢:\n");
+	printf("\nè¯·è¾“å…¥èŠå¤©ä¿¡æ¯:\n");
 	memset(sendBuf,0,sizeof(sendBuf));
 	scanf("%s",sendBuf);
 	if (strcmp(sendBuf,"00")==0) break;
@@ -75,8 +75,8 @@ void main(void)
 		return;
 	}
 
-	//printf("\nÏò¶Ô·½·¢ËÍÒÔÏÂĞÅÏ¢³É¹¦:\n%s\n",sendBuf);
-	printf("\n×¼±¸½ÓÊÕĞÅÏ¢\n");
+	//printf("\nå‘å¯¹æ–¹å‘é€ä»¥ä¸‹ä¿¡æ¯æˆåŠŸ:\n%s\n",sendBuf);
+	printf("\nå‡†å¤‡æ¥æ”¶ä¿¡æ¯\n");
 
 	memset(recvBuf,0,sizeof(recvBuf));
 	len=sizeof(sockaddr);
@@ -90,7 +90,7 @@ void main(void)
 		return;
 	}
 
-	printf("\n³É¹¦ÊÕµ½%s:%d·¢ËÍµÄÒÔÏÂĞÅÏ¢:\n%s\n",inet_ntoa(addr.sin_addr),ntohs(addr.sin_port),recvBuf);
+	printf("\næˆåŠŸæ”¶åˆ°%s:%då‘é€çš„ä»¥ä¸‹ä¿¡æ¯:\n%s\n",inet_ntoa(addr.sin_addr),ntohs(addr.sin_port),recvBuf);
 
 	printf("\n");
 	}

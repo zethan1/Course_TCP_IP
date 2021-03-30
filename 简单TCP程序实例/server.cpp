@@ -10,14 +10,14 @@ int main(void)
 	WSADATA data;
 	SOCKET sockListen,sockTongxun;
 
-	ret=WSAStartup(MAKEWORD(2,2),&data);
+	ret=WSAStartup(MAKEWORD(2,2),&data);	//绑定版本
 	if (SOCKET_ERROR==ret)
 	{
 		printf("WSAStartup 错误");
 		return -1;
 	}
 
-	sockListen=socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
+	sockListen=socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);	//监听
 	if (INVALID_SOCKET==sockListen)
 	{
 		printf("socket 错误");
@@ -31,7 +31,7 @@ int main(void)
 	addrServer.sin_family=AF_INET;
 	addrServer.sin_port=htons(SERVERPORT);
 	len=sizeof(sockaddr);
-	ret=bind(sockListen,(sockaddr*)&addrServer,len);
+	ret=bind(sockListen,(sockaddr*)&addrServer,len);	//绑定
 	if (SOCKET_ERROR==ret)
 	{
 		printf("bind 错误");
@@ -40,10 +40,10 @@ int main(void)
 		return -3;
 	}
 
-	ret=listen(sockListen,1);
+	ret=listen(sockListen,1);		//只监听一个
 	if (SOCKET_ERROR==ret)
 	{
-		printf("listen 错误");//可以用WSAGetLastError()可以看错误码出错的原因是什么
+		printf("listen 错误");    //可以用WSAGetLastError()可以看错误码出错的原因是什么
 		closesocket(sockListen);
 		WSACleanup();
 		return -4;
@@ -53,7 +53,7 @@ int main(void)
 
 	struct sockaddr_in addrClient;
 	len=sizeof(sockaddr);
-	sockTongxun=accept(sockListen,(sockaddr*)&addrClient,&len);
+	sockTongxun=accept(sockListen,(sockaddr*)&addrClient,&len);		//接受客户端
 	//将(sockaddr*)&addrClient改为NULL，即不用这个值；&len也可以写成0；同样可以运行
 	//sockaddr*)&addrClient 是对方的地址信息
 	/*
@@ -77,7 +77,7 @@ int main(void)
 	memset(sendBuf,0,sizeof(sendBuf));  //好习惯，初始化数据清零，不然可能出现乱码
 
 	strcpy(sendBuf,"Welcome to tcpserver");
-	ret=send(sockTongxun,sendBuf,strlen(sendBuf)+1,0);
+	ret=send(sockTongxun,sendBuf,strlen(sendBuf)+1,0);	//发送信息
 	if (SOCKET_ERROR==ret)
 	{
 		printf("send 错误");
@@ -90,7 +90,7 @@ int main(void)
 	printf("向客户端成功发送以下信息:\n%s\n\n",sendBuf);
 
 	memset(recvBuf,0,sizeof(recvBuf));
-	ret=recv(sockTongxun,recvBuf,sizeof(recvBuf),0);
+	ret=recv(sockTongxun,recvBuf,sizeof(recvBuf),0);	//接受客户端发来的信息
 	if (SOCKET_ERROR==ret)
 	{
 		printf("recv 错误");

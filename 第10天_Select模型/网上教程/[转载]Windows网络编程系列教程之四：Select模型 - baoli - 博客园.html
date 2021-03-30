@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<!-- saved from url=(0061)https://www.cnblogs.com/baoli/archive/2008/03/03/1089271.html -->
+<html lang="zh-cn"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="never">
+    <meta name="description" content="介绍网络通信中的select模式。select模式的作用是什么？他的作用就是：防止在在阻塞模式的套接字里被锁死，避免在非阻塞套接字里重复检查WSAEWOULDBLOCK错误。">
+    <meta property="og:description" content="介绍网络通信中的select模式。select模式的作用是什么？他的作用就是：防止在在阻塞模式的套接字里被锁死，避免在非阻塞套接字里重复检查WSAEWOULDBLOCK错误。">
+    <meta http-equiv="Cache-Control" content="no-transform">
+    <meta http-equiv="Cache-Control" content="no-siteapp">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园</title>
+    <link id="favicon" rel="shortcut icon" href="https://common.cnblogs.com/favicon.svg" type="image/svg+xml">
+    
+    <link rel="stylesheet" href="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/blog-common.min.css">
+    <link id="MainCss" rel="stylesheet" href="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/bundle-anothereon001.min.css">
+    
+    <link id="mobile-style" media="only screen and (max-width: 767px)" type="text/css" rel="stylesheet" href="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/bundle-anothereon001-mobile.min.css">
+    
+    <link type="application/rss+xml" rel="alternate" href="https://www.cnblogs.com/baoli/rss">
+    <link type="application/rsd+xml" rel="EditURI" href="https://www.cnblogs.com/baoli/rsd.xml">
+    <link type="application/wlwmanifest+xml" rel="wlwmanifest" href="https://www.cnblogs.com/baoli/wlwmanifest.xml">
+    <script src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/osd.js.下载"></script><script async="" src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/analytics.js.下载"></script><script>
+        var currentBlogId = 32508;
+        var currentBlogApp = 'baoli';
+        var cb_enable_mathjax = false;
+        var isLogined = false;
+        var isBlogOwner = false;
+        var skinName = 'AnotherEon001';
+        var visitorUserId = '';
+    </script>
+        <script>
+            var currentPostDateAdded = '2008-03-03 09:33';
+        </script>
+    <script src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/jquery-2.2.0.min.js.下载"></script>
+    <script src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/blog-common.min.js.下载"></script>
+    
+    
+    
+<script src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/pubads_impl_2020101501.js.下载" async=""></script><link rel="preload" href="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/f.txt" as="script"><script type="text/javascript" src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/f.txt"></script><link rel="prefetch" href="https://4f18e8e2bd511cc492599001003e5dab.safeframe.googlesyndication.com/safeframe/1-0-37/html/container.html"><link rel="prefetch" href="https://tpc.googlesyndication.com/safeframe/1-0-37/html/container.html"></head>
+<body class="has-navbar">
+    <a name="top"></a> 
+    <div id="top_nav" class="navbar">
+        <nav id="nav_main" class="navbar-main">
+            <ul id="nav_left" class="navbar-list navbar-left">
+                <li class="navbar-branding">
+                    <a href="https://www.cnblogs.com/" title="开发者的网上家园"><img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/logo.svg" alt="博客园Logo"></a>
+                </li>
+                <li><a href="https://www.cnblogs.com/" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;skin-navbar-sitehome&#39;)">首页</a></li>
+                <li><a href="https://news.cnblogs.com/" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;skin-navbar-news&#39;)">新闻</a></li>
+                <li><a href="https://q.cnblogs.com/" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;skin-navbar-q&#39;)">博问</a></li>
+                <li><a id="nav_brandzone" href="https://brands.cnblogs.com/" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;skin-navbar-brands&#39;)">专区</a></li>
+                <li><a href="https://ing.cnblogs.com/" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;skin-navbar-ing&#39;)">闪存</a></li>
+                <li><a href="https://edu.cnblogs.com/" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;skin-navbar-edu&#39;)">班级</a></li>
+            </ul>
+            <ul id="nav_right" class="navbar-list navbar-right">
+                <li>
+                    <form id="zzk_search" class="navbar-search" action="https://zzk.cnblogs.com/s" method="get">
+                        <input name="w" id="zzk_search_input" placeholder="代码改变世界" type="text" tabindex="3">
+                        <button type="submit" id="zzk_search_button">
+                            <img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/search.svg" alt="搜索">
+                        </button>
+                    </form>
+                </li>
+                <li id="navbar_login_status" class="navbar-list">
+                    <a id="navblog-myblog-icon" class="navbar-user-info navbar-blog" href="https://passport.cnblogs.com/GetBlogApplyStatus.aspx" alt="我的博客" title="我的博客" style="display: none;">
+                        <img id="myblog_icon" class="navbar-icon" src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/myblog.svg" alt="我的博客">
+                    </a>
+                    <a class="navbar-user-info navbar-message navbar-icon-wrapper" href="https://msg.cnblogs.com/" alt="短消息" title="短消息" style="display: none;">
+                        <img id="msg_icon" class="navbar-icon" src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/message.svg" alt="短消息">
+                        <span id="msg_count" style="display: none"></span>
+                    </a>
+                    <div id="user_info" class="navbar-user-info dropdown" style="display: none;">
+                        <a class="dropdown-button" href="https://home.cnblogs.com/">
+                            <img id="user_icon" class="navbar-avatar" src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/avatar-default.svg" alt="用户头像">
+                        </a>
+                        <div class="dropdown-menu">
+                            <a id="navblog-myblog-text" href="https://passport.cnblogs.com/GetBlogApplyStatus.aspx">我的博客</a>
+                            <a href="https://home.cnblogs.com/">我的园子</a>
+                            <a href="https://account.cnblogs.com/settings/account">账号设置</a>
+                            <a href="javascript:void(0)" onclick="logout();">退出登录</a>
+                        </div>
+                    </div>
+                    <a class="navbar-anonymous" href="https://account.cnblogs.com/signup/" style="display: inline;">注册</a>
+                    <a class="navbar-anonymous" href="https://account.cnblogs.com/signin/?returnUrl=https://www.cnblogs.com/" style="display: inline;">登录</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    
+    <div id="wrapper">
+<div id="header">
+
+<div id="top">
+<h1><a id="Header1_HeaderTitle" class="headermaintitle HeaderMainTitle" href="https://www.cnblogs.com/baoli/">codelife</a>
+</h1>
+<div id="subtitle">
+备忘杂记
+</div>
+</div>
+<div id="sub"><div class="BlogStats">随笔 - 
+28, 文章 - 
+2, 评论 - 
+33, 引用 - 
+0</div>
+
+</div>
+
+
+
+
+</div>
+<div id="main_container">
+<div id="main_content">
+<div id="content">
+	<div id="post_detail">
+    <div class="post">
+        <h2>
+            
+<a id="cb_post_title_url" class="postTitle2 vertical-middle" href="https://www.cnblogs.com/baoli/archive/2008/03/03/1089271.html">
+    <span>[转载]Windows网络编程系列教程之四：Select模型</span>
+    
+
+
+</a>
+
+        </h2>
+        <div class="postbody">
+            
+    <div id="cnblogs_post_description" style="display: none">
+        介绍网络通信中的select模式。
+select模式的作用是什么？他的作用就是：防止在在阻塞模式的套接字里被锁死，避免在非阻塞套接字里重复检查WSAEWOULDBLOCK错误。
+    </div>
+<div id="cnblogs_post_body" class="blogpost-body">
+    <p>原文：<br>
+<font face="Verdana">http://www.51see.com/asp/bbs/public/bp_show.asp?t_id=200308131152297103</font><br>
+<br>
+讲一下套接字模式和套接字I/O模型的区别。先说明一下，只针对Winsock，如果你要骨头里挑鸡蛋把UNIX下的套接字概念来往这里套，那就不关我的事。<br>
+套接字模式：阻塞套接字和非阻塞套接字。或者叫同步套接字和异步套接字。<br>
+套接字模型：描述如何对套接字的I/O行为进行管理。<br>
+Winsock提供的I/O模型一共有五种：<br>
+select,WSAAsyncSelect,WSAEventSelect,Overlapped,Completion。今天先讲解select。<br>
+<br>
+1：select模型（选择模型）<br>
+先看一下下面的这句代码：<br>
+int iResult = recv(s, buffer,1024);<br>
+这是用来接收数据的，在默认的阻塞模式下的套接字里，recv会阻塞在那里，直到套接字连接上有数据可读，把数据读到buffer里后recv函数才会返回，不然就会一直阻塞在那里。在单线程的程序里出现这种情况会导致主线程（单线程程序里只有一个默认的主线程）被阻塞,这样整个程序被锁死在这里，如果永远没数据发送过来，那么程序就会被永远锁死。这个问题可以用多线程解决，但是在有多个套接字连接的情况下，这不是一个好的选择，扩展性很差。Select模型就是为了解决这个问题而出现的。<br>
+再看代码：<br>
+<br>
+int iResult = ioctlsocket(s, FIOBIO, (unsigned long *)&amp;ul);<br>
+iResult = recv(s, buffer,1024);<br>
+<br>
+这一次recv的调用不管套接字连接上有没有数据可以接收都会马上返回。原因就在于我们用ioctlsocket把套接字设置为非阻塞模式了。不过你跟踪一下就会发现，在没有数据的情况下，recv确实是马上返回了，但是也返回了一个错误：WSAEWOULDBLOCK，意思就是请求的操作没有成功完成。看到这里很多人可能会说，那么就重复调用recv并检查返回值，直到成功为止，但是这样做效率很成问题，开销太大。<br>
+感谢天才的微软工程师吧，他们给我们提供了好的解决办法。<br>
+先看看select函数<br>
+int select(<br>
+int nfds, <br>
+fd_set FAR *readfds, <br>
+fd_set FAR *writefds, <br>
+fd_set FAR *exceptfds, <br>
+const struct timeval FAR *timeout <br>
+);<br>
+第一个参数不要管，会被系统忽略的。第二个参数是用来检查套接字可读性，也就说检查套接字上是否有数据可读，同样，第三个参数用来检查数据是否可以发出。最后一个是检查是否有带外数据可读取。<br>
+参数详细的意思请去看MSDN，这里限于篇幅不详细解释了。<br>
+最后一个参数是用来设置select等待多久的，是个结构：<br>
+<br>
+<br>
+struct timeval {<br>
+long tv_sec; // seconds <br>
+long tv_usec; // and microseconds <br>
+};<br>
+如果将这个结构设置为(0,0)，那么select函数会马上返回。<br>
+说了这么久，select的作用到底是什么？<br>
+他的作用就是：防止在在阻塞模式的套接字里被锁死，避免在非阻塞套接字里重复检查WSAEWOULDBLOCK错误。<br>
+他的工作流程如下：<br>
+1：用FD_ZERO宏来初始化我们感兴趣的fd_set，也就是select函数的第二三四个参数。<br>
+2：用FD_SET宏来将套接字句柄分配给相应的fd_set。<br>
+3：调用select函数。<br>
+4：用FD_ISSET对套接字句柄进行检查，如果我们所关注的那个套接字句柄仍然在开始分配的那个fd_set里，那么说明马上可以进行相应的IO操作。比如一个分配给select第一个参数的套接字句柄在select返回后仍然在select第一个参数的fd_set里，那么说明当前数据已经来了，马上可以读取成功而不会被阻塞。<br>
+<br>
+下面给出一个简单的select模型的服务端套接字。<br>
+<br>
+</p>
+<div style="border: 1px solid rgba(204, 204, 204, 1); padding: 4px 5px 4px 4px; font-size: 13px; width: 98%; word-break: break-all; background-color: rgba(238, 238, 238, 1)"><img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/None.gif" align="top" alt=""><span style="color: rgba(0, 0, 0, 1)">#include&nbsp;“iostream.h”<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/None.gif" align="top" alt="">#include&nbsp;“winsock2.h”<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/None.gif" align="top" alt="">#include&nbsp;“windows.h”<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/None.gif" align="top" alt=""><br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/None.gif" align="top" alt=""><br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/None.gif" align="top" alt=""></span><span style="color: rgba(0, 0, 255, 1)">#define</span><span style="color: rgba(0, 0, 0, 1)">&nbsp;InternetAddr&nbsp;"127.0.0.1"</span><span style="color: rgba(0, 0, 0, 1)"><br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/None.gif" align="top" alt=""></span><span style="color: rgba(0, 0, 255, 1)">#define</span><span style="color: rgba(0, 0, 0, 1)">&nbsp;iPort&nbsp;5055</span><span style="color: rgba(0, 0, 0, 1)"><br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/None.gif" align="top" alt=""><br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/None.gif" align="top" alt=""></span><span style="color: rgba(0, 0, 255, 1)">#pragma</span><span style="color: rgba(0, 0, 0, 1)">&nbsp;comment(lib,&nbsp;"ws2_32.lib")</span><span style="color: rgba(0, 0, 0, 1)"><br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/None.gif" align="top" alt=""><br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/None.gif" align="top" alt=""><br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/None.gif" align="top" alt=""></span><span style="color: rgba(0, 0, 255, 1)">void</span><span style="color: rgba(0, 0, 0, 1)">&nbsp;main()<br>
+<img id="Codehighlighter1_169_1699_Open_Image" src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/ExpandedBlockStart.gif" align="top" alt=""><img id="Codehighlighter1_169_1699_Closed_Image" style="display: none" src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/ContractedBlock.gif" align="top" alt=""></span><span id="Codehighlighter1_169_1699_Closed_Text" style="border: 1px solid rgba(128, 128, 128, 1); display: none; background-color: rgba(255, 255, 255, 1)"><img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/dot.gif" alt=""></span><span id="Codehighlighter1_169_1699_Open_Text"><span style="color: rgba(0, 0, 0, 1)">{<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　WSADATA&nbsp;wsa;<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　WSAStartup(MAKEWORD(</span><span style="color: rgba(128, 0, 128, 1)">2</span><span style="color: rgba(0, 0, 0, 1)">,</span><span style="color: rgba(128, 0, 128, 1)">2</span><span style="color: rgba(0, 0, 0, 1)">),&nbsp;</span><span style="color: rgba(0, 0, 0, 1)">&amp;</span><span style="color: rgba(0, 0, 0, 1)">wsa);<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　SOCKET&nbsp;fdServer&nbsp;</span><span style="color: rgba(0, 0, 0, 1)">=</span><span style="color: rgba(0, 0, 0, 1)">&nbsp;socket(AF_INET,&nbsp;SOCK_STREAM,&nbsp;IPPROTO_TCP);<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　</span><span style="color: rgba(0, 0, 255, 1)">struct</span><span style="color: rgba(0, 0, 0, 1)">&nbsp;sockaddr_in&nbsp;server;<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　server.sin_family&nbsp;</span><span style="color: rgba(0, 0, 0, 1)">=</span><span style="color: rgba(0, 0, 0, 1)">&nbsp;AF_INET;<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　server.sin_addr.s_addr&nbsp;</span><span style="color: rgba(0, 0, 0, 1)">=</span><span style="color: rgba(0, 0, 0, 1)">&nbsp;inet_addr(InternetAddr);<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　server.sin_port&nbsp;</span><span style="color: rgba(0, 0, 0, 1)">=</span><span style="color: rgba(0, 0, 0, 1)">&nbsp;htons(iPort);<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　</span><span style="color: rgba(0, 0, 255, 1)">int</span><span style="color: rgba(0, 0, 0, 1)">&nbsp;ret&nbsp;</span><span style="color: rgba(0, 0, 0, 1)">=</span><span style="color: rgba(0, 0, 0, 1)">&nbsp;bind(fdServer,&nbsp;(sockaddr</span><span style="color: rgba(0, 0, 0, 1)">*</span><span style="color: rgba(0, 0, 0, 1)">)</span><span style="color: rgba(0, 0, 0, 1)">&amp;</span><span style="color: rgba(0, 0, 0, 1)">server,&nbsp;</span><span style="color: rgba(0, 0, 255, 1)">sizeof</span><span style="color: rgba(0, 0, 0, 1)">(server));<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　ret&nbsp;</span><span style="color: rgba(0, 0, 0, 1)">=</span><span style="color: rgba(0, 0, 0, 1)">&nbsp;listen(fdServer,&nbsp;</span><span style="color: rgba(128, 0, 128, 1)">4</span><span style="color: rgba(0, 0, 0, 1)">);<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt=""><br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt=""><br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　SOCKET&nbsp;AcceptSocket;&nbsp;<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　fd_set&nbsp;fdread;<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　timeval&nbsp;tv;<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　</span><span style="color: rgba(0, 0, 255, 1)">int</span><span style="color: rgba(0, 0, 0, 1)">&nbsp;nSize;&nbsp;<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt=""><br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　</span><span style="color: rgba(0, 0, 255, 1)">while</span><span style="color: rgba(0, 0, 0, 1)">(</span><span style="color: rgba(128, 0, 128, 1)">1</span><span style="color: rgba(0, 0, 0, 1)">)<br>
+<img id="Codehighlighter1_653_1449_Open_Image" src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/ExpandedSubBlockStart.gif" align="top" alt=""><img id="Codehighlighter1_653_1449_Closed_Image" style="display: none" src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/ContractedSubBlock.gif" align="top" alt="">　　　　</span><span id="Codehighlighter1_653_1449_Closed_Text" style="border: 1px solid rgba(128, 128, 128, 1); display: none; background-color: rgba(255, 255, 255, 1)"><img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/dot.gif" alt=""></span><span id="Codehighlighter1_653_1449_Open_Text"><span style="color: rgba(0, 0, 0, 1)">{<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　　　　　<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　　　　　FD_ZERO(</span><span style="color: rgba(0, 0, 0, 1)">&amp;</span><span style="color: rgba(0, 0, 0, 1)">fdread);</span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">初始化fd_set</span><span style="color: rgba(0, 128, 0, 1)"><br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt=""></span><span style="color: rgba(0, 0, 0, 1)">　　　　　　　　FD_SET(fdServer,&nbsp;</span><span style="color: rgba(0, 0, 0, 1)">&amp;</span><span style="color: rgba(0, 0, 0, 1)">fdread);</span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">分配套接字句柄到相应的fd_set</span><span style="color: rgba(0, 128, 0, 1)"><br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt=""></span><span style="color: rgba(0, 0, 0, 1)">　　　　　　　　<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　　　　　<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　　　　　tv.tv_sec&nbsp;</span><span style="color: rgba(0, 0, 0, 1)">=</span><span style="color: rgba(0, 0, 0, 1)">&nbsp;</span><span style="color: rgba(128, 0, 128, 1)">2</span><span style="color: rgba(0, 0, 0, 1)">;</span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">这里我们打算让select等待两秒后返回，避免被锁死，也避免马上返回</span><span style="color: rgba(0, 128, 0, 1)"><br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt=""></span><span style="color: rgba(0, 0, 0, 1)">　　　　　　　　tv.tv_usec&nbsp;</span><span style="color: rgba(0, 0, 0, 1)">=</span><span style="color: rgba(0, 0, 0, 1)">&nbsp;</span><span style="color: rgba(128, 0, 128, 1)">0</span><span style="color: rgba(0, 0, 0, 1)">;<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　　　　　<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　　　　　select(</span><span style="color: rgba(128, 0, 128, 1)">0</span><span style="color: rgba(0, 0, 0, 1)">,&nbsp;</span><span style="color: rgba(0, 0, 0, 1)">&amp;</span><span style="color: rgba(0, 0, 0, 1)">fdread,&nbsp;NULL,&nbsp;NULL,&nbsp;</span><span style="color: rgba(0, 0, 0, 1)">&amp;</span><span style="color: rgba(0, 0, 0, 1)">tv);<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　　　　　<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　　　　　nSize&nbsp;</span><span style="color: rgba(0, 0, 0, 1)">=</span><span style="color: rgba(0, 0, 0, 1)">&nbsp;</span><span style="color: rgba(0, 0, 255, 1)">sizeof</span><span style="color: rgba(0, 0, 0, 1)">(server);<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　　　　　</span><span style="color: rgba(0, 0, 255, 1)">if</span><span style="color: rgba(0, 0, 0, 1)">&nbsp;(FD_ISSET(fdServer,&nbsp;</span><span style="color: rgba(0, 0, 0, 1)">&amp;</span><span style="color: rgba(0, 0, 0, 1)">fdread))</span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">如果套接字句柄还在fd_set里，说明客户端已经有connect的请求发过来了，马上可以accept成功</span><span style="color: rgba(0, 128, 0, 1)"><br>
+<img id="Codehighlighter1_1054_1158_Open_Image" src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/ExpandedSubBlockStart.gif" align="top" alt=""><img id="Codehighlighter1_1054_1158_Closed_Image" style="display: none" src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/ContractedSubBlock.gif" align="top" alt=""></span><span style="color: rgba(0, 0, 0, 1)">　　　　　　　　</span><span id="Codehighlighter1_1054_1158_Closed_Text" style="border: 1px solid rgba(128, 128, 128, 1); display: none; background-color: rgba(255, 255, 255, 1)"><img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/dot.gif" alt=""></span><span id="Codehighlighter1_1054_1158_Open_Text"><span style="color: rgba(0, 0, 0, 1)">{<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　　　　　　　　　AcceptSocket&nbsp;</span><span style="color: rgba(0, 0, 0, 1)">=</span><span style="color: rgba(0, 0, 0, 1)">&nbsp;accept(fdServer,(&nbsp;sockaddr</span><span style="color: rgba(0, 0, 0, 1)">*</span><span style="color: rgba(0, 0, 0, 1)">)&nbsp;</span><span style="color: rgba(0, 0, 0, 1)">&amp;</span><span style="color: rgba(0, 0, 0, 1)">server,&nbsp;</span><span style="color: rgba(0, 0, 0, 1)">&amp;</span><span style="color: rgba(0, 0, 0, 1)">nSize);<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　　　　　　　　　</span><span style="color: rgba(0, 0, 255, 1)">break</span><span style="color: rgba(0, 0, 0, 1)">;<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/ExpandedSubBlockEnd.gif" align="top" alt="">　　　　　　　　}</span></span><span style="color: rgba(0, 0, 0, 1)"><br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　　　　　<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　　　　　</span><span style="color: rgba(0, 0, 255, 1)">else</span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">还没有客户端的connect请求，我们可以去做别的事，避免像没有用select方式的阻塞套接字程序被锁死的情况，如果没用select,当程序运行到accept的时候客户端恰好没有connect请求，那么程序就会被锁死，做不了任何事情</span><span style="color: rgba(0, 128, 0, 1)"><br>
+<img id="Codehighlighter1_1307_1443_Open_Image" src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/ExpandedSubBlockStart.gif" align="top" alt=""><img id="Codehighlighter1_1307_1443_Closed_Image" style="display: none" src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/ContractedSubBlock.gif" align="top" alt=""></span><span style="color: rgba(0, 0, 0, 1)">　　　　　　　　</span><span id="Codehighlighter1_1307_1443_Closed_Text" style="border: 1px solid rgba(128, 128, 128, 1); display: none; background-color: rgba(255, 255, 255, 1)"><img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/dot.gif" alt=""></span><span id="Codehighlighter1_1307_1443_Open_Text"><span style="color: rgba(0, 0, 0, 1)">{<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　　　　　　　　　</span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">do&nbsp;something</span><span style="color: rgba(0, 128, 0, 1)"><br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt=""></span><span style="color: rgba(0, 0, 0, 1)">　　　　　　　　　　　　::MessageBox(NULL,&nbsp;</span><span style="color: rgba(128, 0, 0, 1)">"</span><span style="color: rgba(128, 0, 0, 1)">waiting<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/dot.gif" alt=""></span><span style="color: rgba(128, 0, 0, 1)">"</span><span style="color: rgba(0, 0, 0, 1)">,&nbsp;</span><span style="color: rgba(128, 0, 0, 1)">"</span><span style="color: rgba(128, 0, 0, 1)">recv</span><span style="color: rgba(128, 0, 0, 1)">"</span><span style="color: rgba(0, 0, 0, 1)">,&nbsp;MB_ICONINFORMATION);</span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">别的事做完后，继续去检查是否有客户端连接请求</span><span style="color: rgba(0, 128, 0, 1)"><br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/ExpandedSubBlockEnd.gif" align="top" alt=""></span><span style="color: rgba(0, 0, 0, 1)">　　　　　　　　}</span></span><span style="color: rgba(0, 0, 0, 1)"><br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/ExpandedSubBlockEnd.gif" align="top" alt="">　　　　}</span></span><span style="color: rgba(0, 0, 0, 1)"><br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt=""><br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　</span><span style="color: rgba(0, 0, 255, 1)">char</span><span style="color: rgba(0, 0, 0, 1)">&nbsp;buffer[</span><span style="color: rgba(128, 0, 128, 1)">128</span><span style="color: rgba(0, 0, 0, 1)">];<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　ZeroMemory(buffer,&nbsp;</span><span style="color: rgba(128, 0, 128, 1)">128</span><span style="color: rgba(0, 0, 0, 1)">);<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt=""><br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　ret&nbsp;</span><span style="color: rgba(0, 0, 0, 1)">=</span><span style="color: rgba(0, 0, 0, 1)">&nbsp;recv(AcceptSocket,buffer,</span><span style="color: rgba(128, 0, 128, 1)">128</span><span style="color: rgba(0, 0, 0, 1)">,</span><span style="color: rgba(128, 0, 128, 1)">0</span><span style="color: rgba(0, 0, 0, 1)">);</span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">这里同样可以用select，用法和上面一样</span><span style="color: rgba(0, 128, 0, 1)"><br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt=""></span><span style="color: rgba(0, 0, 0, 1)"><br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　::MessageBox(NULL,&nbsp;buffer,&nbsp;</span><span style="color: rgba(128, 0, 0, 1)">"</span><span style="color: rgba(128, 0, 0, 1)">recv</span><span style="color: rgba(128, 0, 0, 1)">"</span><span style="color: rgba(0, 0, 0, 1)">,&nbsp;MB_ICONINFORMATION);<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt=""><br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　closesocket(AcceptSocket);<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　WSACleanup();<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt="">　　　　</span><span style="color: rgba(0, 0, 255, 1)">return</span><span style="color: rgba(0, 0, 0, 1)">;<br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/InBlock.gif" align="top" alt=""><br>
+<img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/ExpandedBlockEnd.gif" align="top" alt="">}</span></span></div>
+<p><br>
+<br>
+基本上就这样，个人感觉select模型用处不是很大，我只用过一次，去年写端口扫描器的时候用select来检查超时。<br>
+感觉讲得不是很清楚，虽然东西我很明白，但是要讲解出来讲解得很清楚真不容易。<br>
+<br>
+</p>
+
+</div>
+<div id="MySignature"></div>
+<div class="clear"></div>
+<div id="blog_post_info_block"><div id="BlogPostCategory">
+    分类: 
+            <a href="https://www.cnblogs.com/baoli/category/124950.html" target="_blank">网络编程</a></div>
+<div id="EntryTag">
+    标签: 
+            <a href="https://www.cnblogs.com/baoli/tag/%E7%BD%91%E7%BB%9C%E5%BC%80%E5%8F%91/">网络开发</a>,             <a href="https://www.cnblogs.com/baoli/tag/select%E6%A8%A1%E5%BC%8F/">select模式</a></div>
+
+    <div id="blog_post_info">
+<div id="green_channel">
+        <a href="javascript:void(0);" id="green_channel_digg" onclick="DiggIt(1089271,cb_blogId,1);green_channel_success(this,&#39;谢谢推荐！&#39;);">好文要顶</a>
+        <a id="green_channel_follow" onclick="follow(&#39;f68a3d0b-63cf-dd11-9e4d-001cf0cd104b&#39;);" href="javascript:void(0);">关注我</a>
+    <a id="green_channel_favorite" onclick="AddToWz(cb_entryId);return false;" href="javascript:void(0);">收藏该文</a>
+    <a id="green_channel_weibo" href="javascript:void(0);" title="分享至新浪微博" onclick="ShareToTsina()"><img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/icon_weibo_24.png" alt=""></a>
+    <a id="green_channel_wechat" href="javascript:void(0);" title="分享至微信" onclick="shareOnWechat()"><img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/wechat.png" alt=""></a>
+</div>
+<div id="author_profile">
+    <div id="author_profile_info" class="author_profile_info">
+            <a href="https://home.cnblogs.com/u/baoli/" target="_blank"><img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/sample_face.gif" class="author_avatar" alt=""></a>
+        <div id="author_profile_detail" class="author_profile_info">
+            <a href="https://home.cnblogs.com/u/baoli/">baoli</a><br>
+            <a href="https://home.cnblogs.com/u/baoli/followees/">关注 - 0</a><br>
+            <a href="https://home.cnblogs.com/u/baoli/followers/">粉丝 - 3</a>
+        </div>
+    </div>
+    <div class="clear"></div>
+    <div id="author_profile_honor"></div>
+    <div id="author_profile_follow">
+                <a href="javascript:void(0);" onclick="follow(&#39;f68a3d0b-63cf-dd11-9e4d-001cf0cd104b&#39;);return false;">+加关注</a>
+    </div>
+</div>
+<div id="div_digg">
+    <div class="diggit" onclick="votePost(1089271,&#39;Digg&#39;)">
+        <span class="diggnum" id="digg_count">0</span>
+    </div>
+    <div class="buryit" onclick="votePost(1089271,&#39;Bury&#39;)">
+        <span class="burynum" id="bury_count">0</span>
+    </div>
+    <div class="clear"></div>
+    <div class="diggword" id="digg_tips">
+    </div>
+</div>
+
+<script type="text/javascript">
+    currentDiggType = 0;
+</script></div>
+    <div class="clear"></div>
+    <div id="post_next_prev">
+
+    <a href="https://www.cnblogs.com/baoli/archive/2008/03/03/1089253.html" class="p_n_p_prefix">« </a> 上一篇：    <a href="https://www.cnblogs.com/baoli/archive/2008/03/03/1089253.html" title="发布于 2008-03-03 21:18">[转载]同步、异步、阻塞和非阻塞的概念</a>
+    <br>
+    <a href="https://www.cnblogs.com/baoli/archive/2008/03/03/1089287.html" class="p_n_p_prefix">» </a> 下一篇：    <a href="https://www.cnblogs.com/baoli/archive/2008/03/03/1089287.html" title="发布于 2008-03-03 21:46">[转载]手把手教你玩转SOCKET模型之重叠I/O篇</a>
+
+</div>
+</div>
+        </div>
+        <p class="postfoot">
+            posted on 
+<span id="post-date">2008-03-03 21:33</span>&nbsp;
+<a href="https://www.cnblogs.com/baoli/">baoli</a>&nbsp;
+阅读(<span id="post_view_count">13680</span>)&nbsp;
+评论(<span id="post_comment_count">5</span>)&nbsp;
+<a href="https://i.cnblogs.com/EditPosts.aspx?postid=1089271" rel="nofollow">编辑</a>&nbsp;
+<a href="javascript:void(0)" onclick="AddToWz(1089271);return false;">收藏</a>
+        </p>
+    </div>
+</div>
+
+<script src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/highlight.min.js.下载"></script>
+<script>markdown_highlight();</script>
+<script>
+    var allowComments = true, cb_blogId = 32508, cb_blogApp = 'baoli', cb_blogUserGuid = 'f68a3d0b-63cf-dd11-9e4d-001cf0cd104b';
+    var cb_entryId = 1089271, cb_entryCreatedDate = '2008-03-03 21:33', cb_postType = 1;
+    loadViewCount(cb_entryId);
+</script>
+<a name="!comments"></a>
+<div id="blog-comments-placeholder">
+
+<div id="comment_pager_top">
+    
+</div>
+
+<a name="评论"></a>
+<div id="comments">
+    <h3>评论</h3>
+    <div class="feedbackNoItems"></div>
+
+        <div class="post">
+            <h2>
+                
+<a href="https://www.cnblogs.com/baoli/archive/2008/03/03/1089271.html#1523377" class="layer">#1楼</a>
+<a name="1523377" id="comment_anchor_1523377"></a>
+
+                &nbsp;&nbsp;
+
+<span class="comment_actions">
+    
+    
+    
+    
+</span>
+
+
+            </h2>
+            
+<div id="comment_body_1523377" data-format-type="Ubb" class="blog_comment_body cnblogs-ubb">
+     "感谢天才的微软工程师吧"?! 
+<br>select()根本就不是微软想出来的办法，而是从Unix里"盗版"过来了！ unix里早就有这个方法了！微软大部分东西都是"剽窃"过来的。  
+</div>
+        <div class="comment_vote">
+            <span class="comment_error" style="color: red"></span>
+            <a href="javascript:void(0);" class="comment_digg" onclick="return voteComment(1523377, &#39;Digg&#39;, this.parentElement, false);">
+                支持(0)
+            </a>
+            <a href="javascript:void(0);" class="comment_burry" onclick="return voteComment(1523377, &#39;Bury&#39;, this.parentElement, false);">
+                反对(0)
+            </a>
+        </div>
+        
+
+            <div class="postfoot">
+                
+<span class="comment_date">2009-05-09 13:21</span>
+
+ | 
+        <a id="a_comment_author_1523377" title="未注册用户">
+            paganini
+        </a>
+
+            </div>
+        </div>
+        <div class="post">
+            <h2>
+                
+<a href="https://www.cnblogs.com/baoli/archive/2008/03/03/1089271.html#1580473" class="layer">#2楼</a>
+<a name="1580473" id="comment_anchor_1580473"></a>
+
+                &nbsp;&nbsp;
+
+<span class="comment_actions">
+    
+    
+    
+    
+</span>
+
+
+            </h2>
+            
+<div id="comment_body_1580473" data-format-type="Ubb" class="blog_comment_body cnblogs-ubb">
+    haha
+</div>
+
+            <div class="postfoot">
+                
+<span class="comment_date">2009-07-09 15:49</span>
+
+ | 
+        <a id="a_comment_author_1580473" title="未注册用户">
+            aacde
+        </a>
+
+            </div>
+        </div>
+        <div class="post">
+            <h2>
+                
+<a href="https://www.cnblogs.com/baoli/archive/2008/03/03/1089271.html#1594587" class="layer">#3楼</a>
+<a name="1594587" id="comment_anchor_1594587"></a>
+
+                &nbsp;&nbsp;
+
+<span class="comment_actions">
+    
+    
+    
+    
+</span>
+
+
+            </h2>
+            
+<div id="comment_body_1594587" data-format-type="Ubb" class="blog_comment_body cnblogs-ubb">
+    你没看到代码全是错误的吗?<br>
+</div>
+
+            <div class="postfoot">
+                
+<span class="comment_date">2009-07-24 14:19</span>
+
+ | 
+        <a id="a_comment_author_1594587" title="未注册用户">
+            come
+        </a>
+
+            </div>
+        </div>
+        <div class="post">
+            <h2>
+                
+<a href="https://www.cnblogs.com/baoli/archive/2008/03/03/1089271.html#1705173" class="layer">#4楼</a>
+<a name="1705173" id="comment_anchor_1705173"></a>
+
+                &nbsp;&nbsp;
+
+<span class="comment_actions">
+    
+    
+    
+    
+</span>
+
+
+            </h2>
+            
+<div id="comment_body_1705173" data-format-type="Ubb" class="blog_comment_body cnblogs-ubb">
+    感谢天才的微软工程师吧
+</div>
+
+            <div class="postfoot">
+                
+<span class="comment_date">2009-11-23 22:25</span>
+
+ | 
+        <a id="a_comment_author_1705173" title="未注册用户">
+            一起感谢吧
+        </a>
+
+            </div>
+        </div>
+        <div class="post">
+            <h2>
+                
+<a href="https://www.cnblogs.com/baoli/archive/2008/03/03/1089271.html#2321988" class="layer">#5楼</a>
+<a name="2321988" id="comment_anchor_2321988"></a>
+    <span id="comment-maxId" style="display: none">2321988</span>
+    <span id="comment-maxDate" style="display: none">2012/3/3 下午3:56:28</span>
+
+                &nbsp;&nbsp;
+
+<span class="comment_actions">
+    
+    
+    
+    
+</span>
+
+
+            </h2>
+            
+<div id="comment_body_2321988" data-format-type="Ubb" class="blog_comment_body cnblogs-ubb">
+    谢谢推荐这么好的文章，不过完整的系列在哪里呢？
+</div>
+        <div class="comment_vote">
+            <span class="comment_error" style="color: red"></span>
+            <a href="javascript:void(0);" class="comment_digg" onclick="return voteComment(2321988, &#39;Digg&#39;, this.parentElement, false);">
+                支持(0)
+            </a>
+            <a href="javascript:void(0);" class="comment_burry" onclick="return voteComment(2321988, &#39;Bury&#39;, this.parentElement, false);">
+                反对(0)
+            </a>
+        </div>
+        
+
+            <div class="postfoot">
+                
+<span class="comment_date">2012-03-03 15:56</span>
+
+ | 
+        <a id="a_comment_author_2321988" href="https://www.cnblogs.com/bigchen2012/" target="_blank">bigchen2012</a>
+
+            </div>
+        </div>
+
+</div>
+
+<div id="comment_pager_bottom">
+    
+</div>
+
+
+</div>
+<div id="comment_form" class="commentform">
+    <a name="commentform"></a>
+    <div id="divCommentShow"></div>
+    <div id="comment_nav"><span id="span_refresh_tips"></span><a href="javascript:void(0);" onclick="return RefreshCommentList();" id="lnk_RefreshComments" runat="server" clientidmode="Static">刷新评论</a><a href="https://www.cnblogs.com/baoli/archive/2008/03/03/1089271.html#" onclick="return RefreshPage();">刷新页面</a><a href="https://www.cnblogs.com/baoli/archive/2008/03/03/1089271.html#top">返回顶部</a></div>
+    <div id="comment_form_container" style="visibility: visible;"><div class="login_tips">
+    登录后才能发表评论，立即 <a rel="nofollow" href="javascript:void(0);" class="underline" onclick="return login(&#39;commentform&#39;);">登录</a> 或
+    <a rel="nofollow" href="javascript:void(0);" class="underline" onclick="return register();">注册</a>，
+    <a href="https://www.cnblogs.com/">访问</a> 网站首页。
+</div>
+<div class="under-comment-nav under-comment-box-nav">
+    <ul>
+        <li><a href="https://www.cnblogs.com/" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;under-comment-nav-sitehome&#39;)">首页</a></li>
+        <li><a href="https://news.cnblogs.com/" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;under-comment-nav-news&#39;)">新闻</a></li>
+        <li><a href="https://q.cnblogs.com/" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;under-comment-nav-q&#39;)">博问</a></li>
+        <li><a href="https://brands.cnblogs.com/" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;under-comment-nav-brands&#39;)">专区</a></li>
+        <li><a href="https://ing.cnblogs.com/" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;under-comment-nav-ing&#39;)">闪存</a></li>
+        <li><a href="https://edu.cnblogs.com/" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;under-comment-nav-edu&#39;)">班级</a></li>
+    </ul>
+</div></div>
+    <div class="ad_text_commentbox" id="ad_text_under_commentbox"></div>
+    <div id="ad_t2"><a href="http://www.softbam.com/index.htm" target="_blank" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;T2-ucancode&#39;)">【推荐】超50万行C++/C#: 大型组态工控、电力仿真CAD与GIS源码库</a><br><a href="https://brands.cnblogs.com/grapecity/" target="_blank" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;T2-葡萄城&#39;)">【推荐】赋能开发者，葡萄城，全球领先的软件开发技术提供商</a><br><a href="https://brands.cnblogs.com/agora" target="_blank" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;T2-声网专区&#39;)">【推荐】未知数的距离，毫秒间的传递，声网与你实时互动</a><br></div>
+    <div id="opt_under_post"></div>
+    <div id="cnblogs_c1" class="c_ad_block">
+        <div id="div-gpt-ad-1592365906576-0" style="width: 300px; height: 250px;" data-google-query-id="CMqG9v_8xuwCFQQGvAodVaEOXQ"><div id="google_ads_iframe_/1090369/C1_0__container__" style="border: 0pt none;"><iframe id="google_ads_iframe_/1090369/C1_0" title="3rd party ad content" name="google_ads_iframe_/1090369/C1_0" width="300" height="250" scrolling="no" marginwidth="0" marginheight="0" frameborder="0" data-google-container-id="1" style="border: 0px; vertical-align: bottom;" data-load-complete="true" src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/saved_resource.html"></iframe></div></div>
+    </div>
+    <div id="under_post_news"><div class="recomm-block"><b>相关博文：</b><br>·  <a title="品Spring：注解之王@Configuration和它的一众“小弟们”" href="https://www.cnblogs.com/lixinjie/p/taste-spring-010.html" target="_blank" onclick="clickRecomItmem(11587596)">品Spring：注解之王@Configuration和它的一众“小弟们”</a><br>·  <a title="Java生鲜电商平台-源码地址公布与思考和建议" href="https://www.cnblogs.com/jurendage/p/9114796.html" target="_blank" onclick="clickRecomItmem(9114796)">Java生鲜电商平台-源码地址公布与思考和建议</a><br>·  <a title="微软并发Key-Value存储库FASTER介绍" href="https://www.cnblogs.com/knoww/p/11781405.html" target="_blank" onclick="clickRecomItmem(11781405)">微软并发Key-Value存储库FASTER介绍</a><br>·  <a title="Java生鲜电商平台-积分,优惠券,会员折扣,签到、预售、拼团、砍价、秒杀及抽奖等促销模块架构设计" href="https://www.cnblogs.com/jurendage/p/9165594.html" target="_blank" onclick="clickRecomItmem(9165594)">Java生鲜电商平台-积分,优惠券,会员折扣,签到、预售、拼团、砍价、秒杀及抽奖等促销模块架构设计</a><br>·  <a title="Javascript函数返回值及定时器基础" href="https://www.cnblogs.com/sjie0224/p/8204608.html" target="_blank" onclick="clickRecomItmem(8204608)">Javascript函数返回值及定时器基础</a><br>»  <a target="_blank" href="https://recomm.cnblogs.com/blogpost/1089271">更多推荐...</a></div></div>
+    <div id="cnblogs_c2" class="c_ad_block">
+        <div id="div-gpt-ad-1592366332455-0" style="width: 468px; height: 60px;" data-google-query-id="CMuG9v_8xuwCFQQGvAodVaEOXQ"><div id="google_ads_iframe_/1090369/C2_0__container__" style="border: 0pt none;"><iframe id="google_ads_iframe_/1090369/C2_0" title="3rd party ad content" name="google_ads_iframe_/1090369/C2_0" width="468" height="60" scrolling="no" marginwidth="0" marginheight="0" frameborder="0" data-google-container-id="2" style="border: 0px; vertical-align: bottom;" data-load-complete="true" src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/saved_resource(1).html"></iframe></div></div>
+    </div>
+    <div id="under_post_kb">
+<div class="itnews c_ad_block">
+    <b>最新 IT 新闻</b>:
+    <br>
+ ·          <a href="https://news.cnblogs.com/n/675534/" target="_blank">中视频版图的春秋战国</a>
+        <br>
+ ·          <a href="https://news.cnblogs.com/n/675527/" target="_blank">蚂蚁集团公布发行方案 A股打新规模约200亿显示代码为688688</a>
+        <br>
+ ·          <a href="https://news.cnblogs.com/n/675526/" target="_blank">阿里认购7.3亿股蚂蚁科创板股票 半数限售期2年</a>
+        <br>
+ ·          <a href="https://news.cnblogs.com/n/675523/" target="_blank">蚂蚁董事长井贤栋公开信：蚂蚁不是金融机构，也不仅是一家移动支付公司</a>
+        <br>
+ ·          <a href="https://news.cnblogs.com/n/675521/" target="_blank">Mozilla担心在谷歌反垄断案中被连累</a>
+        <br>
+    » <a href="https://news.cnblogs.com/" title="IT 新闻" target="_blank">更多新闻...</a>
+</div></div>
+    <div id="HistoryToday" class="c_ad_block"></div>
+    <script type="text/javascript">
+       var commentManager = new blogCommentManager();
+       commentManager.renderComments(0);
+       fixPostBody();
+       deliverBigBanner();
+setTimeout(function() { incrementViewCount(cb_entryId); }, 50);       deliverT2();
+       deliverC1C2();
+       loadNewsAndKb();
+       loadBlogSignature();
+LoadPostCategoriesTags(cb_blogId, cb_entryId);       LoadPostInfoBlock(cb_blogId, cb_entryId, cb_blogApp, cb_blogUserGuid);
+       GetPrevNextPost(cb_entryId, cb_blogId, cb_entryCreatedDate, cb_postType);
+       loadOptUnderPost();
+       GetHistoryToday(cb_blogId, cb_blogApp, cb_entryCreatedDate);
+   </script>
+</div>
+
+
+
+</div>
+</div>
+<div id="leftmenu">
+
+
+<h3>导航</h3>
+<ul>
+    <li>
+        <a id="blog_nav_sitehome" class="menu" href="https://www.cnblogs.com/">
+博客园</a>
+
+    </li>
+    <li>
+        
+<a id="blog_nav_myhome" class="menu" href="https://www.cnblogs.com/baoli/">
+首页</a>
+
+    </li>
+    <li>
+        
+
+<a id="blog_nav_newpost" class="menu" href="https://i.cnblogs.com/EditPosts.aspx?opt=1">
+新随笔</a>
+
+    </li>
+    <li>
+        
+<a id="blog_nav_contact" class="menu" href="https://msg.cnblogs.com/send/baoli">
+联系</a>
+    </li>
+    <li>
+        
+<a id="blog_nav_rss" class="menu" href="javascript:void(0)" data-rss="https://www.cnblogs.com/baoli/rss/">
+订阅</a>
+        
+<a id="blog_nav_rss_image" href="https://www.cnblogs.com/baoli/rss/">
+    <img src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/xml.gif" alt="订阅">
+</a>
+    </li>
+    <li>
+        
+<a id="blog_nav_admin" class="menu" href="https://i.cnblogs.com/">
+管理</a>
+
+    </li>
+</ul>
+
+
+<div id="blog-calendar" style="">
+
+<table id="blogCalendar" class="Cal" cellspacing="0" cellpadding="0" title="Calendar" border="0">
+    <tbody>
+        <tr>
+            <td colspan="7">
+                <table class="CalTitle" cellspacing="0" border="0">
+                    <tbody>
+                        <tr>
+                            <td class="CalNextPrev">
+                                <a href="javascript:void(0);" onclick="loadBlogCalendar(&#39;2008/02/03&#39;); return false;">&lt;</a>
+                            </td>
+                            <td align="center">2008年3月</td>
+                            <td align="right" class="CalNextPrev">
+                                <a href="javascript:void(0);" onclick="loadBlogCalendar(&#39;2008/04/03&#39;); return false;">&gt;</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    <tr>
+        <th class="CalDayHeader" align="center" abbr="日" scope="col">日</th>
+        <th class="CalDayHeader" align="center" abbr="一" scope="col">一</th>
+        <th class="CalDayHeader" align="center" abbr="二" scope="col">二</th>
+        <th class="CalDayHeader" align="center" abbr="三" scope="col">三</th>
+        <th class="CalDayHeader" align="center" abbr="四" scope="col">四</th>
+        <th class="CalDayHeader" align="center" abbr="五" scope="col">五</th>
+        <th class="CalDayHeader" align="center" abbr="六" scope="col">六</th>
+    </tr>
+            <tr>
+                            <td class="CalOtherMonthDay" align="center">24</td>
+                            <td class="CalOtherMonthDay" align="center">25</td>
+                            <td class="CalOtherMonthDay" align="center">26</td>
+                            <td class="CalOtherMonthDay" align="center">27</td>
+                            <td class="CalOtherMonthDay" align="center">28</td>
+                            <td class="CalOtherMonthDay" align="center">29</td>
+                    <td class="CalWeekendDay" align="center">
+                        1
+                    </td>
+            </tr>
+                <tr>
+                        <td class="CalWeekendDay" align="center">
+                            2
+                        </td>
+                            <td class="" align="center">
+                                <a href="https://www.cnblogs.com/baoli/archive/2008/03/03.html"><u>3</u></a>
+                            </td>
+                            <td class="" align="center">
+                                4
+                            </td>
+                            <td class="" align="center">
+                                5
+                            </td>
+                            <td class="" align="center">
+                                6
+                            </td>
+                            <td class="" align="center">
+                                7
+                            </td>
+                        <td class="CalWeekendDay" align="center">
+                            8
+                        </td>
+                </tr>
+                <tr>
+                        <td class="CalWeekendDay" align="center">
+                            9
+                        </td>
+                            <td class="" align="center">
+                                10
+                            </td>
+                            <td class="" align="center">
+                                11
+                            </td>
+                            <td class="" align="center">
+                                12
+                            </td>
+                            <td class="" align="center">
+                                13
+                            </td>
+                            <td class="" align="center">
+                                14
+                            </td>
+                        <td class="CalWeekendDay" align="center">
+                            15
+                        </td>
+                </tr>
+                <tr>
+                        <td class="CalWeekendDay" align="center">
+                            16
+                        </td>
+                            <td class="" align="center">
+                                17
+                            </td>
+                            <td class="" align="center">
+                                18
+                            </td>
+                            <td class="" align="center">
+                                19
+                            </td>
+                            <td class="" align="center">
+                                20
+                            </td>
+                            <td class="" align="center">
+                                21
+                            </td>
+                        <td class="CalWeekendDay" align="center">
+                            22
+                        </td>
+                </tr>
+                <tr>
+                        <td class="CalWeekendDay" align="center">
+                            23
+                        </td>
+                            <td class="" align="center">
+                                24
+                            </td>
+                            <td class="" align="center">
+                                25
+                            </td>
+                            <td class="" align="center">
+                                26
+                            </td>
+                            <td class="" align="center">
+                                27
+                            </td>
+                            <td class="" align="center">
+                                28
+                            </td>
+                        <td class="CalWeekendDay" align="center">
+                            29
+                        </td>
+                </tr>
+                <tr>
+                        <td class="CalWeekendDay" align="center">
+                            30
+                        </td>
+                            <td class="" align="center">
+                                31
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                1
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                2
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                3
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                4
+                            </td>
+                        <td class="CalOtherMonthDay" align="center">
+                            5
+                        </td>
+                </tr>
+    </tbody>
+</table></div><script>loadBlogDefaultCalendar();</script>
+<div id="sidebar_news" class="newsItem"><meta name="vs_showGrid" content="False">
+<h3>公告</h3>
+
+<div id="blog-news">
+    QQ交流群号：559423
+QQ交流群号：9417574
+    <div id="profile_block">
+        昵称：
+        <a href="https://home.cnblogs.com/u/baoli/">
+            baoli
+        </a>
+        <br>
+        园龄：
+        <a href="https://home.cnblogs.com/u/baoli/" title="入园时间：2008-01-03">
+            12年9个月
+        </a>
+        <br>
+        粉丝：
+        <a href="https://home.cnblogs.com/u/baoli/followers/">
+            3
+        </a>
+        <br>
+        关注：
+        <a href="https://home.cnblogs.com/u/baoli/followees/">
+            0
+        </a>
+        <div id="p_b_follow">
+<a href="javascript:void(0)" onclick="follow(&#39;f68a3d0b-63cf-dd11-9e4d-001cf0cd104b&#39;)">+加关注</a></div>
+        <script>getFollowStatus('f68a3d0b-63cf-dd11-9e4d-001cf0cd104b');</script>
+    </div>
+</div>
+
+</div>
+<div id="sidebar_ad"></div>
+<div id="blog-sidecolumn"><!-- 搜索 -->
+<div id="sidebar_search" class="sidebar-block">
+    <div id="sidebar_search" class="mySearch">
+        <h3 class="catListTitle">搜索</h3>
+        <div id="sidebar_search_box">
+            <div id="widget_my_zzk" class="div_my_zzk">
+                <input type="text" id="q" onkeydown="return zzk_go_enter(event);" class="input_my_zzk">&nbsp;<input onclick="zzk_go()" type="button" value="找找看" id="btnZzk" class="btn_my_zzk">
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<!-- 常用链接 -->
+<div id="sidebar_shortcut" class="sidebar-block">
+<h3 class="catListTitle">
+常用链接
+</h3>
+<ul>
+    
+<li><a href="https://www.cnblogs.com/baoli/p/" title="我的博客的随笔列表">我的随笔</a></li>
+<li><a href="https://www.cnblogs.com/baoli/MyComments.html" title="我的发表过的评论列表">我的评论</a></li>
+<li><a href="https://www.cnblogs.com/baoli/OtherPosts.html" title="我评论过的随笔列表">我的参与</a></li>
+<li><a href="https://www.cnblogs.com/baoli/RecentComments.html" title="我的博客的评论列表">最新评论</a></li>
+<li><a href="https://www.cnblogs.com/baoli/tag/" title="我的博客的标签列表">我的标签</a></li>
+
+</ul>
+</div>
+
+<!-- 最新随笔 -->
+
+
+<!-- 我的标签 -->
+<div id="sidebar_toptags" class="sidebar-block">
+<h3>我的标签</h3>
+<div id="MyTag">
+    <ul>
+                <li>
+            <a href="https://www.cnblogs.com/baoli/tag/IOCP/">IOCP<span class="tag-count">(2)</span></a>
+        </li>
+        <li>
+            <a href="https://www.cnblogs.com/baoli/tag/%E5%AE%8C%E6%88%90%E7%AB%AF%E5%8F%A3/">完成端口<span class="tag-count">(2)</span></a>
+        </li>
+        <li>
+            <a href="https://www.cnblogs.com/baoli/tag/%E7%BD%91%E7%BB%9C%E5%BC%80%E5%8F%91/">网络开发<span class="tag-count">(1)</span></a>
+        </li>
+        <li>
+            <a href="https://www.cnblogs.com/baoli/tag/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1/">网络通信<span class="tag-count">(1)</span></a>
+        </li>
+        <li>
+            <a href="https://www.cnblogs.com/baoli/tag/%E5%BC%82%E6%AD%A5/">异步<span class="tag-count">(1)</span></a>
+        </li>
+        <li>
+            <a href="https://www.cnblogs.com/baoli/tag/%E9%98%BB%E5%A1%9E/">阻塞<span class="tag-count">(1)</span></a>
+        </li>
+        <li>
+            <a href="https://www.cnblogs.com/baoli/tag/%E7%BB%84%E4%BB%B6/">组件<span class="tag-count">(1)</span></a>
+        </li>
+        <li>
+            <a href="https://www.cnblogs.com/baoli/tag/BlockingModel/">BlockingModel<span class="tag-count">(1)</span></a>
+        </li>
+        <li>
+            <a href="https://www.cnblogs.com/baoli/tag/Bourne%20Shell/">Bourne Shell<span class="tag-count">(1)</span></a>
+        </li>
+        <li>
+            <a href="https://www.cnblogs.com/baoli/tag/CompletionRoutine/">CompletionRoutine<span class="tag-count">(1)</span></a>
+        </li>
+    <li>
+        <a href="https://www.cnblogs.com/baoli/tag/">更多</a>
+    </li>
+
+    </ul>
+</div>
+</div>
+
+<!-- 积分与排名 -->
+
+
+<!-- 随笔分类、随笔档案、文章分类、新闻分类、相册、链接 -->
+<div id="sidebar_categories">
+		<h3>
+随笔分类
+
+
+</h3>
+				<ul>
+			
+				<li>
+<a href="https://www.cnblogs.com/baoli/category/118498.html" rel="" target="">
+    asp.net(1)
+</a>
+
+</li>
+				<li>
+<a href="https://www.cnblogs.com/baoli/category/118785.html" rel="" target="">
+    dotnet杂物箱(5)
+</a>
+
+</li>
+				<li>
+<a href="https://www.cnblogs.com/baoli/category/123295.html" rel="" target="">
+    检测排错(5)
+</a>
+
+</li>
+				<li>
+<a href="https://www.cnblogs.com/baoli/category/118499.html" rel="" target="">
+    就是随笔(2)
+</a>
+
+</li>
+				<li>
+<a href="https://www.cnblogs.com/baoli/category/155097.html" rel="" target="">
+    其它技术(2)
+</a>
+
+</li>
+				<li>
+<a href="https://www.cnblogs.com/baoli/category/119663.html" rel="" target="">
+    数据库(2)
+</a>
+
+</li>
+				<li>
+<a href="https://www.cnblogs.com/baoli/category/124950.html" rel="" target="">
+    网络编程(9)
+</a>
+
+</li>
+				<li>
+<a href="https://www.cnblogs.com/baoli/category/119983.html" rel="" target="">
+    正则表达式(2)
+</a>
+
+</li>
+			
+				</ul>
+		<h3>
+随笔档案
+
+
+</h3>
+				<ul>
+			
+				<li>
+<a href="https://www.cnblogs.com/baoli/archive/2009/11.html" rel="" target="">
+    2009年11月(1)
+</a>
+
+</li>
+				<li>
+<a href="https://www.cnblogs.com/baoli/archive/2009/06.html" rel="" target="">
+    2009年6月(1)
+</a>
+
+</li>
+				<li>
+<a href="https://www.cnblogs.com/baoli/archive/2009/03.html" rel="" target="">
+    2009年3月(1)
+</a>
+
+</li>
+				<li>
+<a href="https://www.cnblogs.com/baoli/archive/2008/09.html" rel="" target="">
+    2008年9月(2)
+</a>
+
+</li>
+				<li>
+<a href="https://www.cnblogs.com/baoli/archive/2008/06.html" rel="" target="">
+    2008年6月(1)
+</a>
+
+</li>
+				<li>
+<a href="https://www.cnblogs.com/baoli/archive/2008/05.html" rel="" target="">
+    2008年5月(2)
+</a>
+
+</li>
+				<li>
+<a href="https://www.cnblogs.com/baoli/archive/2008/03.html" rel="" target="">
+    2008年3月(8)
+</a>
+
+</li>
+				<li>
+<a href="https://www.cnblogs.com/baoli/archive/2008/02.html" rel="" target="">
+    2008年2月(3)
+</a>
+
+</li>
+				<li>
+<a href="https://www.cnblogs.com/baoli/archive/2008/01.html" rel="" target="">
+    2008年1月(9)
+</a>
+
+</li>
+			
+				</ul>
+		<h3>
+文章分类
+
+
+</h3>
+				<ul>
+			
+				<li>
+<a href="https://www.cnblogs.com/baoli/category/118393.html" rel="" target="">
+    web其它(2)
+</a>
+
+</li>
+			
+				</ul>
+		<h3>
+友情链接
+
+
+</h3>
+				<ul>
+			
+				<li>
+<a href="http://tttick.cnblogs.com/" rel="nofollow noopener noreferrer" target="_blank">
+    T.t.T!Ck.￠#
+</a>
+
+</li>
+				<li>
+<a href="http://xrinehart.cnblogs.com/" rel="nofollow noopener noreferrer" target="_blank">
+    風語·深蓝
+</a>
+
+</li>
+				<li>
+<a href="http://www.cnblogs.com/callwangxiang" rel="nofollow noopener noreferrer" target="">
+    猎人
+</a>
+
+</li>
+			
+				</ul>
+
+</div>
+
+<!-- 最新评论 -->
+<div id="sidebar_recentcomments" class="sidebar-block"><div id="recent_comments_wrap" class="RecentComment">
+    <h3 class="catListTitle">最新评论</h3>
+    <div class="RecentCommentBlock">
+        <ul>
+                    <li class="recent_comment_title"><a href="https://www.cnblogs.com/baoli/archive/2008/03/03/1089271.html">1. Re:[转载]Windows网络编程系列教程之四：Select模型</a></li>
+                    <li class="recent_comment_body">谢谢推荐这么好的文章，不过完整的系列在哪里呢？</li>
+                    <li class="recent_comment_author">--bigchen2012</li>
+                    <li class="recent_comment_title"><a href="https://www.cnblogs.com/baoli/archive/2008/03/03/1089295.html">2. Re:[转载]理解 I/O Completion Port (IOCP完成端口)</a></li>
+                    <li class="recent_comment_body">好文！</li>
+                    <li class="recent_comment_author">--傻瓜力量大</li>
+                    <li class="recent_comment_title"><a href="https://www.cnblogs.com/baoli/archive/2008/03/03/1089271.html">3. Re:[转载]Windows网络编程系列教程之四：Select模型</a></li>
+                    <li class="recent_comment_body">感谢天才的微软工程师吧</li>
+                    <li class="recent_comment_author">--一起感谢吧</li>
+                    <li class="recent_comment_title"><a href="https://www.cnblogs.com/baoli/archive/2008/03/03/1089359.html">4. Re:说说网络通信模型</a></li>
+                    <li class="recent_comment_body">写的还行，不过，dotNet可能不需要你操心这些问题，说不定一个函数就把你说的东西都封装完了。</li>
+                    <li class="recent_comment_author">--burningcpu</li>
+                    <li class="recent_comment_title"><a href="https://www.cnblogs.com/baoli/archive/2008/03/03/1089271.html">5. Re:[转载]Windows网络编程系列教程之四：Select模型</a></li>
+                    <li class="recent_comment_body">你没看到代码全是错误的吗?<br></li>
+                    <li class="recent_comment_author">--come</li>
+        </ul>
+    </div>
+</div></div>
+
+
+<!-- 阅读排行榜 -->
+<div id="sidebar_topviewedposts" class="sidebar-block">
+<div id="topview_posts_wrap">
+    <h3 class="catListTitle">阅读排行榜</h3>
+    <div id="TopViewPostsBlock">
+        <ul style="word-break:break-all">
+                    <li>
+                        <a href="https://www.cnblogs.com/baoli/archive/2008/03/03/1089271.html">
+                            1. [转载]Windows网络编程系列教程之四：Select模型(13679)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/baoli/archive/2008/03/03/1089306.html">
+                            2. [转载]IOCP模型的总结(11588)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/baoli/archive/2009/06/13/1502593.html">
+                            3. JProfile使用心得－－windows版(4408)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/baoli/archive/2008/03/03/1089359.html">
+                            4. 说说网络通信模型(3097)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/baoli/archive/2008/03/03/1089315.html">
+                            5. 发个IOCP的C++例子(2789)
+                        </a>
+                    </li>
+        </ul>
+    </div>
+</div></div>
+
+<!-- 评论排行榜 -->
+<div id="sidebar_topcommentedposts" class="sidebar-block">
+<div id="topfeedback_posts_wrap">
+    <h3 class="catListTitle">评论排行榜</h3>
+    <div id="TopFeedbackPostsBlock">
+        <ul style="word-break:break-all">
+                    <li>
+                        <a href="https://www.cnblogs.com/baoli/archive/2008/03/03/1089271.html">
+                            1. [转载]Windows网络编程系列教程之四：Select模型(5)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/baoli/archive/2008/03/03/1089359.html">
+                            2. 说说网络通信模型(3)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/baoli/archive/2008/02/19/1073625.html">
+                            3. 网站内存泄漏问题追踪－－初始访问后，三次查询点击内存使用量达400M(3)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/baoli/archive/2008/01/12/1036220.html">
+                            4. 使用pl sql的表类型作为返回值(3)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/baoli/archive/2008/03/03/1089306.html">
+                            5. [转载]IOCP模型的总结(2)
+                        </a>
+                    </li>
+        </ul>
+    </div>
+</div></div>
+
+<!-- 推荐排行榜 -->
+<div id="sidebar_topdiggedposts" class="sidebar-block">
+<div id="topdigg_posts_wrap">
+    <div class="catListView">
+        <h3 class="catListTitle">推荐排行榜</h3>
+        <div id="TopDiggPostsBlock">
+            <ul style="word-break: break-all">
+                        <li>
+                            <a href="https://www.cnblogs.com/baoli/archive/2008/03/03/1089253.html">
+                                1. [转载]同步、异步、阻塞和非阻塞的概念(1)
+                            </a>
+                        </li>
+            </ul>
+        </div>
+    </div>
+</div></div></div>
+                    <script>loadBlogSideColumn();</script>
+
+</div>
+</div>
+<div class="clear"></div>
+<div id="footer">
+<p id="footer">
+	Powered by: 
+	<br>
+	
+	<a href="https://www.cnblogs.com/" id="footer_site_link">博客园</a>
+	<br>
+	Copyright © 2020 baoli
+<br><span id="poweredby">Powered by .NET 5.0.0-rc.2.20475.5 on Kubernetes</span>
+
+</p>
+
+
+</div>
+</div>
+
+
+    
+
+
+<iframe id="google_osd_static_frame_8683006710515" name="google_osd_static_frame" style="display: none; width: 0px; height: 0px;" src="./[转载]Windows网络编程系列教程之四：Select模型 - baoli - 博客园_files/saved_resource(2).html"></iframe></body></html>

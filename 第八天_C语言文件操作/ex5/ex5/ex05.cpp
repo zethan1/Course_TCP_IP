@@ -1,3 +1,4 @@
+//文件的大小至少是4kb，为了对齐字节
 #include "stdio.h"
 struct student_type
 {
@@ -24,7 +25,7 @@ int main(void)
 /*	int len;
 	fseek(fp,0,SEEK_END);
 	len=ftell(fp);
-	printf("�ļ���СΪ %d �ֽ�\n",len);*/
+	printf("ÎÄ¼þ´óÐ¡Îª %d ×Ö½Ú\n",len);*/
 
 	fclose(fp);
 }

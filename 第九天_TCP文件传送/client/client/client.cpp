@@ -43,9 +43,9 @@ int main(void)
 		return -3;
 	}
 
-	printf("Á¬½Ó·şÎñÆ÷³É¹¦\n");
+	printf("è¿æ¥æœåŠ¡å™¨æˆåŠŸ\n");
 
-	printf("ÇëÊäÈëÄãĞèÒª´«ËÍµÄÎÄ¼şÃû,´øÀ©Õ¹Ãû\n");
+	printf("è¯·è¾“å…¥ä½ éœ€è¦ä¼ é€çš„æ–‡ä»¶å,å¸¦æ‰©å±•å\n");
 	scanf("%s",fname);
 	SendFile(sockClient,fname);
 	//SendFile(sockClient,"test.txt");
@@ -72,7 +72,7 @@ int SendFile(SOCKET sock,char filename[512])
 
     fseek(fp,0,SEEK_END);
 	totlen=ftell(fp);
-	printf("ÎÄ¼ş%sµÄ³¤¶ÈÎª%d×Ö½Ú\n",filename,totlen);
+	printf("æ–‡ä»¶%sçš„é•¿åº¦ä¸º%då­—èŠ‚\n",filename,totlen);
 
 	memset(sendBuf,0,sizeof(sendBuf));
 	strcpy(sendBuf,filename);
@@ -90,7 +90,7 @@ int SendFile(SOCKET sock,char filename[512])
 		return -3;
 	} 
 
-	printf("Ïò·şÎñÆ÷·¢ËÍÎÄ¼şÃû³É¹¦\n");
+	printf("å‘æœåŠ¡å™¨å‘é€æ–‡ä»¶åæˆåŠŸ\n");
 
 	memset(sendBuf,0,sizeof(sendBuf));
 	itoa(totlen,sendBuf,10);
@@ -107,22 +107,22 @@ int SendFile(SOCKET sock,char filename[512])
 		return -5;
 	} 
 
-	printf("Ïò·şÎñÆ÷·¢ËÍÎÄ¼ş³¤¶È³É¹¦\n");
+	printf("å‘æœåŠ¡å™¨å‘é€æ–‡ä»¶é•¿åº¦æˆåŠŸ\n");
 	
 	cnt=totlen/SIZE;
 	len1=SIZE;
-	if (totlen%SIZE)
+	if (totlen%SIZE)	//åˆ¤æ–­æ˜¯å¦æœ‰ä½™æ•°ï¼Œå¤šä¼ ä¸€å­—èŠ‚
 	{
 		lenlast=totlen-cnt*SIZE;
 		cnt=cnt+1;
 	}
 
-	printf("\n\nÎÄ¼ş³¤¶ÈÎª%d×Ö½Ú,\nÃ¿´Î´«ËÍ%d×Ö½Ú,\nĞèÒª·Ö%d´Î´«ËÍ\n",
+	printf("\n\næ–‡ä»¶é•¿åº¦ä¸º%då­—èŠ‚,\næ¯æ¬¡ä¼ é€%då­—èŠ‚,\néœ€è¦åˆ†%dæ¬¡ä¼ é€\n",
 		totlen,SIZE,cnt);
-	printf("Õâ¸ö³ÌĞòÖ»´«ËÍÁËÒ»´Î\n\n");
+	printf("è¿™ä¸ªç¨‹åºåªä¼ é€äº†ä¸€æ¬¡\n\n");
 		
 
-	rewind(fp);
+	rewind(fp);		//æŒ‡é’ˆéœ€è¦å›å¤´
 	fread(sendBuf,SIZE,1,fp);
 	ret=send(sock,sendBuf,SIZE,0);
 	if (SOCKET_ERROR==ret)

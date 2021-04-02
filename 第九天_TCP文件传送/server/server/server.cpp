@@ -112,7 +112,13 @@ int RecvFile(SOCKET sock)
 	}
 
 	printf("成功接收客户端发来的文件长度: %s\n",recvBuf);
-
+	
+	//int len;
+	//len = atoi(recvBuf);	//得到接收长度
+	//补充完整方法：
+	//1、每次接收字节数累计，如果等于len，退出接收
+	//2、
+	
 	memset(sendBuf,0,sizeof(sendBuf));
 	strcpy(sendBuf,recvBuf);
 	ret=send(sock,sendBuf,strlen(sendBuf),0);	//不是要显示2聊天信息，这里可以不+1

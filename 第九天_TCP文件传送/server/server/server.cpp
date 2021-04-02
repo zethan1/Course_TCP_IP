@@ -1,9 +1,12 @@
+//æ–‡ä»¶ä¼ è¾“éœ€è¦ï¼šæ–‡ä»¶åã€æ–‡ä»¶æ‰©å±•åã€æ–‡ä»¶é•¿åº¦
+//æ–‡ä»¶æ‰“ä¸å¼€å¯ä»¥ç”¨äºŒè¿›åˆ¶çš„æ ¼å¼æ¥æ‰“å¼€ç¼–è¾‘
+
 #include "stdio.h"
 #include "winsock2.h"
 #pragma comment(lib,"ws2_32.lib")
 #define SERVERIP "127.0.0.1"
 #define SERVERPORT 3333
-#define SIZE 2//4096
+#define SIZE 2//4096	//æ–¹ä¾¿è°ƒè¯•çš„æ—¶å€™çœ‹å­—èŠ‚ï¼Œåˆšå¥½ä¸¤ä½
 #define BUFSIZE 4096
 
 int RecvFile(SOCKET sock);
@@ -58,7 +61,7 @@ int main(void)
 		return -5;
 	}
 
-	printf("½ÓÊÕµ½¿Í»§¶ËµÄÁ¬½Ó\n");
+	printf("æ¥æ”¶åˆ°å®¢æˆ·ç«¯çš„è¿æ¥\n");
 
 	RecvFile(sockTx);
 
@@ -83,7 +86,7 @@ int RecvFile(SOCKET sock)
 		return -1;
 	}
 
-	printf("³É¹¦½ÓÊÕ¿Í»§¶Ë·¢À´µÄÎÄ¼şÃû: %s\n",recvBuf);
+	printf("æˆåŠŸæ¥æ”¶å®¢æˆ·ç«¯å‘æ¥çš„æ–‡ä»¶å: %s\n",recvBuf);
 
 	memset(sendBuf,0,sizeof(sendBuf));
 	strcpy(sendBuf,recvBuf);
@@ -93,7 +96,7 @@ int RecvFile(SOCKET sock)
 		return -2;
 	}
 
-	printf("ÇëÊäÈëÄãÏ£Íû±£´æµÄÎÄ¼şÃû£¨´øÀ©Õ¹Ãû£©\n");
+	printf("è¯·è¾“å…¥ä½ å¸Œæœ›ä¿å­˜çš„æ–‡ä»¶åï¼ˆå¸¦æ‰©å±•åï¼‰\n");
 	scanf("%s",filename);
     fp=fopen(filename,"wb");
 	if (NULL==fp)
@@ -108,17 +111,17 @@ int RecvFile(SOCKET sock)
 		return -4;
 	}
 
-	printf("³É¹¦½ÓÊÕ¿Í»§¶Ë·¢À´µÄÎÄ¼ş³¤¶È: %s\n",recvBuf);
+	printf("æˆåŠŸæ¥æ”¶å®¢æˆ·ç«¯å‘æ¥çš„æ–‡ä»¶é•¿åº¦: %s\n",recvBuf);
 
 	memset(sendBuf,0,sizeof(sendBuf));
 	strcpy(sendBuf,recvBuf);
-	ret=send(sock,sendBuf,strlen(sendBuf),0);
+	ret=send(sock,sendBuf,strlen(sendBuf),0);	//ä¸æ˜¯è¦æ˜¾ç¤º2èŠå¤©ä¿¡æ¯ï¼Œè¿™é‡Œå¯ä»¥ä¸+1
 	if (SOCKET_ERROR==ret)
 	{
 		return -5;
 	}
 
-	//ÎªÁË²âÊÔ,ÕâÀïÖ»½ÓÊÕÇ°SIZE×Ö½Ú
+	//ä¸ºäº†æµ‹è¯•,è¿™é‡Œåªæ¥æ”¶å‰SIZEå­—èŠ‚
 	ret=recv(sock,recvBuf,SIZE,0);
 	if (SOCKET_ERROR==ret)
 	{

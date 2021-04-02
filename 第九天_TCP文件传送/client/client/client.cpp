@@ -120,7 +120,12 @@ int SendFile(SOCKET sock,char filename[512])
 	printf("\n\n文件长度为%d字节,\n每次传送%d字节,\n需要分%d次传送\n",
 		totlen,SIZE,cnt);
 	printf("这个程序只传送了一次\n\n");
-		
+
+	
+	//补充完整方法
+	//1、最后一次发送的数据可能和前面不一样（因为最后一次发送的是和前面一样，但实际上其实是求余的结果大小）
+	//(前面cnt-1次发送SIZE，最后一次发送lenlast)
+	//注意不要用strlen，用SIZE
 
 	rewind(fp);		//指针需要回头
 	fread(sendBuf,SIZE,1,fp);

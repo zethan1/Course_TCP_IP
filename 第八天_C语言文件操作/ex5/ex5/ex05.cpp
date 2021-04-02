@@ -1,4 +1,4 @@
-//文件的大小至少是4kb，为了对齐字节
+//文件的大小至少是4kb，为了对齐字节。
 #include "stdio.h"
 struct student_type
 {

@@ -7,20 +7,20 @@ int  main()
  {  
 	pcap_if_t *alldevs, *d; 
     char errbuf[PCAP_ERRBUF_SIZE+1]; 
-    if (pcap_findalldevs(&alldevs, errbuf) == -1) /* »ñµÃÍø¿¨µÄÁĞ±í */
+    if (pcap_findalldevs(&alldevs, errbuf) == -1) /* è·å¾—ç½‘å¡çš„åˆ—è¡¨ */
     {fprintf(stderr,"Error in pcap_findalldevs: %s\n",errbuf); 
       return -1; 
      } 
      
-	/* Ñ­»·µ÷ÓÃifprint() À´ÏÔÊ¾pcap_if½á¹¹µÄĞÅÏ¢*/ 
+	/* å¾ªç¯è°ƒç”¨ifprint() æ¥æ˜¾ç¤ºpcap_ifç»“æ„çš„ä¿¡æ¯*/ 
      for(d=alldevs;d;d=d->next)
-{  ifprint(d);  }  
+{  ifprint(d);  }	//è°ƒç”¨ä¸‹é¢è‡ªå·±å†™çš„å‡½æ•°è¾“å‡ºæ›´å¤šç½‘å¡ä¿¡æ¯  
       return 1 ; 
 } 
 
  /* Print all the available information on the given interface */ 
 void ifprint(pcap_if_t *d) 
-{  	IN_ADDR sinaddr;//IPv4µØÖ·
+{  	IN_ADDR sinaddr;//IPv4åœ°å€
 	pcap_addr_t *a; 
 	printf("%s\n",d->name); /* Name */
 	if (d->description) /* Description */
@@ -31,27 +31,27 @@ void ifprint(pcap_if_t *d)
 	for(a=d->addresses;a;a=a->next) 
 	{
 		printf("\tAddress Family:#%d\n",a->addr->sa_family); 
-    	/*¹ØÓÚ sockaddr_in ½á¹¹Çë²Î¿¼³ÌĞòºó×¢ÊÍ*/ 
+    	/*å…³äº sockaddr_in ç»“æ„è¯·å‚è€ƒç¨‹åºåæ³¨é‡Š*/ 
 		switch(a->addr->sa_family) 
 		{ 
 		  case AF_INET: 
-			printf("\tAddress Family Name: AF_INET\n");//´òÓ¡ÍøÂçµØÖ·ÀàĞÍ 
-			if (a->addr)//´òÓ¡IPµØÖ· 
+			printf("\tAddress Family Name: AF_INET\n");//æ‰“å°ç½‘ç»œåœ°å€ç±»å‹ 
+			if (a->addr)//æ‰“å°IPåœ°å€ 
 			{
              sinaddr=((struct sockaddr_in *)a->addr)->sin_addr;
 			 printf("\tAddress:%d.%d.%d.%d\n",
 				 sinaddr.S_un.S_un_b.s_b1,sinaddr.S_un.S_un_b.s_b2,
 				 sinaddr.S_un.S_un_b.s_b3,sinaddr.S_un.S_un_b.s_b4);
            	}
-			if (a->netmask)//´òÓ¡ÑÚÂë 
+			if (a->netmask)//æ‰“å°æ©ç  
 			{ sinaddr=((struct sockaddr_in *)a->netmask)->sin_addr;
 			  printf("\tNetmask:%s\n",inet_ntoa(sinaddr));
 			}
-			if (a->broadaddr)//´òÓ¡¹ã²¥µØÖ· 
+			if (a->broadaddr)//æ‰“å°å¹¿æ’­åœ°å€ 
 			{   sinaddr=((struct sockaddr_in *)a->broadaddr)->sin_addr;
 			    printf("\tBroadcast Address:%s\n",inet_ntoa(sinaddr));
 			}
-			if (a->dstaddr)//Ä¿µÄµØÖ· 
+			if (a->dstaddr)//ç›®çš„åœ°å€ 
 			{ sinaddr=((struct sockaddr_in *)a->dstaddr)->sin_addr;
 			  printf("\tDestination Address:%s\n",inet_ntoa(sinaddr));
 			}

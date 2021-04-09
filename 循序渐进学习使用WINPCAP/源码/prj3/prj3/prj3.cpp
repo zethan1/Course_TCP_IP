@@ -10,13 +10,13 @@ int main()
 	pcap_t *adhandle; 
 	char errbuf[PCAP_ERRBUF_SIZE]; 
 	
-	/* »ñµÃÍø¿¨µÄÁĞ±í */ 
+	/* è·å¾—ç½‘å¡çš„åˆ—è¡¨ */ 
 	if (pcap_findalldevs(&alldevs, errbuf) == -1) 
 	{ 	fprintf(stderr,"Error in pcap_findalldevs: %s\n", errbuf); 
 		exit(1); 
 	} 
 	
-	/* ´òÓ¡Íø¿¨ĞÅÏ¢ */ 
+	/* æ‰“å°ç½‘å¡ä¿¡æ¯ */ 
 	for(d=alldevs; d; d=d->next) 
 	{ 	printf("%d. %s", ++i, d->name); 
 		if (d->description) printf(" (%s)\n", d->description); 
@@ -29,24 +29,24 @@ int main()
 	} 
 	
 	printf("Enter the interface number (1-%d):",i); 
-	scanf("%d", &inum);//ÊäÈëÒªÑ¡Ôñ´ò¿ªµÄÍø¿¨ºÅ 
+	scanf("%d", &inum);//è¾“å…¥è¦é€‰æ‹©æ‰“å¼€çš„ç½‘å¡å· 
 	
-	if(inum < 1 || inum > i) //ÅĞ¶ÏºÅµÄºÏ·¨ĞÔ 
+	if(inum < 1 || inum > i) //åˆ¤æ–­å·çš„åˆæ³•æ€§ 
 	{  printf("\nInterface number out of range.\n"); 
 		/* Free the device list */ 
 		pcap_freealldevs(alldevs); 
 		return -1; 
 	} 
 	
-	/* ÕÒµ½ÒªÑ¡ÔñµÄÍø¿¨½á¹¹ */ 
+	/* æ‰¾åˆ°è¦é€‰æ‹©çš„ç½‘å¡ç»“æ„ */ 
 	for(d=alldevs, i=0; i< inum-1 ;d=d->next, i++); 
 	
-	/* ´ò¿ªÑ¡ÔñµÄÍø¿¨ */ 
-	if ( (adhandle= pcap_open_live(d->name, // Éè±¸Ãû³Æ 
+	/* æ‰“å¼€é€‰æ‹©çš„ç½‘å¡ */ 
+	if ( (adhandle= pcap_open_live(d->name, // è®¾å¤‡åç§° 
 		65536,   // portion of the packet to capture.  
 		// 65536 grants that the whole packet will be captured on all the MACs. 
-		1,       // »ìÔÓÄ£Ê½ 
-		1000,     // ¶Á³¬Ê±Îª1Ãë 
+		1,       // æ··æ‚æ¨¡å¼ 
+		1000,     // è¯»è¶…æ—¶ä¸º1ç§’ 
 		errbuf   // error buffer 
 		) ) == NULL) 
 	{  fprintf(stderr,"\nUnable to open the adapter. %s is not supported by WinPcap\n"); 
@@ -60,18 +60,25 @@ int main()
 	/* At this point, we don't need any more the device list. Free it */ 
 	pcap_freealldevs(alldevs); 
 	
-	/* ¿ªÊ¼²¶»ñ°ü */ 
-	pcap_loop(adhandle, 0, packet_handler, NULL); 
+	/* å¼€å§‹æ•è·åŒ… */
+	//NULLä¸ºé¢å¤–å‚æ•°ï¼Œæ”¹ä¸º"test"è®¾ç½®é¢å¤–å‚æ•°
+	pcap_loop(adhandle, 0, packet_handler, "test"); //å¦‚æœ0æ”¹ä¸º1ï¼Œåˆ™æŠ“1ä¸ªåŒ…
 	return 0; 
 } 
-/* ¶ÔÃ¿Ò»¸öµ½À´µÄÊı¾İ°üµ÷ÓÃ¸Ãº¯Êı */ 
+/* å¯¹æ¯ä¸€ä¸ªåˆ°æ¥çš„æ•°æ®åŒ…è°ƒç”¨è¯¥å‡½æ•° */ 
 void packet_handler(u_char *param, const struct 
 					pcap_pkthdr *header, const u_char *pkt_data) 
 { 
 	struct tm *ltime; 
 	char timestr[16]; 
 	
-	/* ½«Ê±¼ä´Á×ª±äÎªÒ×¶ÁµÄ±ê×¼¸ñÊ½*/ 
+	/* å°†æ—¶é—´æˆ³è½¬å˜ä¸ºæ˜“è¯»çš„æ ‡å‡†æ ¼å¼*/ 
+	//è¡¥å……
+	static int cnt = 0;
+	cnt++;
+	printf("ç¬¬%dä¸ªåŒ…ï¼Œå‚æ•°=%s", cnt,param);
+	
+	
 	ltime=localtime(&header->ts.tv_sec); 
 	strftime( timestr, sizeof timestr, "%H:%M:%S", ltime); 
 	printf("%s,%.6d len:%d\n", timestr, header->ts.tv_usec, header->len); 

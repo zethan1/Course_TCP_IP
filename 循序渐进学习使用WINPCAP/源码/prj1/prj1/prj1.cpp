@@ -5,14 +5,16 @@ void  main()
    pcap_if_t *alldevs,*d; 
    int i=0; 
    char errbuf[PCAP_ERRBUF_SIZE];
-   /* PCAP_ERRBUF_SIZE =256£¬ÔÚpcap.hÖĞ¶¨Òå */             
+   /* PCAP_ERRBUF_SIZE =256ï¼Œåœ¨pcap.hä¸­å®šä¹‰ */             
     
-    if (pcap_findalldevs(&alldevs, errbuf) == -1) /* Õâ¸öAPIÓÃÀ´»ñµÃÍø¿¨µÄÁĞ±í */
+	//1ã€æ‰¾åˆ°æ‰€æœ‰ç½‘å¡
+    if (pcap_findalldevs(&alldevs, errbuf) == -1) /* è¿™ä¸ªAPIç”¨æ¥è·å¾—ç½‘å¡çš„åˆ—è¡¨ */
      {  fprintf(stderr,"Error in pcap_findalldevs: %s\n", errbuf); 
         return; 
      }  
      
-	  /* ÏÔÊ¾ÁĞ±íµÄÏìÓ¦×Ö¶ÎµÄÄÚÈİ */ 
+	//2ã€æ˜¾ç¤ºæ‰¾åˆ°çš„æ‰€æœ‰ç½‘å¡ä¿¡æ¯
+	  /* æ˜¾ç¤ºåˆ—è¡¨çš„å“åº”å­—æ®µçš„å†…å®¹ */ 
        for(d=alldevs;d;d=d->next) 
        {   printf("%d. %s", ++i, d->name); 
            if (d->description)  printf(" (%s)\n", d->description); 
@@ -24,6 +26,7 @@ void  main()
         return; 
 	   } 
   
+	//3ã€é‡Šæ”¾æ‰€æœ‰ç½‘å¡
 	   /*We don't need any more the device list. Free it */ 
        pcap_freealldevs(alldevs); 
   }

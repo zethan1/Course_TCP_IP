@@ -35,7 +35,7 @@ PURPOSE.
 #include "pcap.h" 
 #pragma comment(lib,"wpcap")
 #pragma comment(lib,"ws2_32")
-/* 4 BITµÄIPµØÖ·¶¨Òå */
+/* 4 BITçš„IPåœ°å€å®šä¹‰ */
 typedef struct ip_address 
 { 	u_char byte1; 
 	u_char byte2; 
@@ -43,31 +43,31 @@ typedef struct ip_address
 	u_char byte4; 
 }ip_address; 
 
-/* IPv4 Í·µÄ¶¨Òå */ 
+/* IPv4 å¤´çš„å®šä¹‰ */ 
 typedef struct ip_header
-{ 	u_char ver_ihl;     // 4 bitµÄ°æ±¾ÐÅÏ¢ + 4 bitsµÄ±¨Í·³¤ 
-	u_char tos;         // TOSÀàÐÍ  
-	u_short tlen;       // ×Ü³¤¶È 
-	u_short identification; // Identification£¨±êÊ¶£© 
-	u_short flags_fo;     // Flags (3 bits±êÖ¾) +Fragment offset (13 bitsÆ¬Æ«ÒÆ) 
-	u_char ttl;         // Éú´æÆÚ 
-	u_char proto;       // ºóÃæµÄÐ­ÒéÐÅÏ¢ 
-	u_short crc;         // Í·²¿Ð£ÑéºÍ 
-	ip_address saddr;     // Ô´IP 
-	ip_address daddr;     // Ä¿µÄIP 
-	u_int   op_pad;       // Option + Padding£¨Ñ¡Ïî+Ìî³äÓò£© 
+{ 	u_char ver_ihl;     // 4 bitçš„ç‰ˆæœ¬ä¿¡æ¯ + 4 bitsçš„æŠ¥å¤´é•¿ 
+	u_char tos;         // TOSç±»åž‹  
+	u_short tlen;       // æ€»é•¿åº¦ 
+	u_short identification; // Identificationï¼ˆæ ‡è¯†ï¼‰ 
+	u_short flags_fo;     // Flags (3 bitsæ ‡å¿—) +Fragment offset (13 bitsç‰‡åç§») 
+	u_char ttl;         // ç”Ÿå­˜æœŸ 
+	u_char proto;       // åŽé¢çš„åè®®ä¿¡æ¯ 
+	u_short crc;         // å¤´éƒ¨æ ¡éªŒå’Œ 
+	ip_address saddr;     // æºIP 
+	ip_address daddr;     // ç›®çš„IP 
+	u_int   op_pad;       // Option + Paddingï¼ˆé€‰é¡¹+å¡«å……åŸŸï¼‰ 
 }ip_header; 
 
 /* UDP header*/ 
 typedef struct udp_header
 { 
-	u_short sport;       // Source port£¨Ô´¶Ë¿ÚºÅ£© 
-	u_short dport;       // Destination port£¨Ä¿µÄ¶Ë¿ÚºÅ£© 
-	u_short len;         // Datagram length£¨×Ü³¤¶È£© 
-	u_short crc;         // Checksum£¨Ð£ÑéºÍ£©
+	u_short sport;       // Source portï¼ˆæºç«¯å£å·ï¼‰ 
+	u_short dport;       // Destination portï¼ˆç›®çš„ç«¯å£å·ï¼‰ 
+	u_short len;         // Datagram lengthï¼ˆæ€»é•¿åº¦ï¼‰ 
+	u_short crc;         // Checksumï¼ˆæ ¡éªŒå’Œï¼‰
 }udp_header; 
 
-/* ËµÃ÷£º´¦Àí°üµÄ»Øµ÷º¯Êý */ 
+/* è¯´æ˜Žï¼šå¤„ç†åŒ…çš„å›žè°ƒå‡½æ•° */ 
 void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_char *pkt_data); 
 
 int main() 
@@ -79,7 +79,7 @@ int main()
 	pcap_t *adhandle; 
 	char errbuf[PCAP_ERRBUF_SIZE]; 
 	u_int netmask; 
-	char packet_filter[] = "ip and udp"; 
+	char packet_filter[] = "ip and udp"; 	//æŠ“udpå’Œipçš„åŒ…ï¼Œå¦‚æžœè¦tcpåŠ ä¸Šå°±è¡Œ
 	struct bpf_program fcode; 
 	
 	/* Retrieve the device list */ 
@@ -160,7 +160,7 @@ int main()
 	pcap_freealldevs(alldevs); 
 	
 	/* start the capture */ 
-	pcap_loop(adhandle, 0, packet_handler, NULL); 
+	pcap_loop(adhandle, 0, packet_handler, NULL); //æŠ“å‡ ä¸ªåŒ…ï¼Œå°±æŠŠ0æ”¹æˆå‡ 
 	
 	return 0; 
 } 
@@ -184,14 +184,14 @@ void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_cha
 	
 	printf("%s.%.6d len:%d ", timestr, header->ts.tv_usec, header->len); 
 	
-	/* ÕÒµ½IPÍ·µÄÎ»ÖÃ */ 
-	ih = (ip_header *) (pkt_data +14); //14ÎªÒÔÌ«Í·µÄ³¤¶È 
+	/* æ‰¾åˆ°IPå¤´çš„ä½ç½® */ 
+	ih = (ip_header *) (pkt_data +14); //14ä¸ºä»¥å¤ªå¤´çš„é•¿åº¦ 
 	
-	/* ÕÒµ½UDPµÄÎ»ÖÃ */ 
-	ip_len = (ih->ver_ihl & 0xf) * 4; 
+	/* æ‰¾åˆ°UDPçš„ä½ç½® */ 
+	ip_len = (ih->ver_ihl & 0xf) * 4; //0100 0101 & 0000 1111å¾—åˆ°0000 0101
 	uh = (udp_header *) ((u_char*)ih + ip_len); 
 	
-	/* ½«¶Ë¿ÚÐÅÏ¢´ÓÍøÂçÐÍ×ª±äÎªÖ÷»úË³Ðò */ 
+	/* å°†ç«¯å£ä¿¡æ¯ä»Žç½‘ç»œåž‹è½¬å˜ä¸ºä¸»æœºé¡ºåº */ 
 	sport = ntohs( uh->sport ); 
 	dport = ntohs( uh->dport ); 
 	
@@ -208,3 +208,7 @@ void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_cha
 		ih->daddr.byte4, 
 		dport); 
 } 
+
+//æ¸…é™¤ç¼“å†²æ›´å¥½çš„æŠ“åŒ…
+//ipconfig /flushdns
+

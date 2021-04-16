@@ -11,11 +11,13 @@ bool RespondStatus;
 SOCKET Socket;
 int browse(char *url);
 
+//memcpyå¯ä»¥æ‹·è´ç©ºæ ¼åçš„å­—ç¬¦ï¼Œstrcpyä¸è¡Œ
+
 int main()
 {
 	char url[256];
 	memset(url,0,sizeof(url));
-	printf("ÇëÊäÈëÒªä¯ÀÀµÄÍøÖ·: ");
+	printf("è¯·è¾“å…¥è¦æµè§ˆçš„ç½‘å€: ");
 	scanf("%s",url);
 	
 	//strcpy(url,"http://news.ifeng.com/c/7sJZuEaH4d6");
@@ -36,33 +38,33 @@ int browse(char *url)
 	WSADATA WSAData;
 	if (WSAStartup(MAKEWORD(2,2),&WSAData)!=0)
 	{
-      printf("³õÊ¼»¯WinsockÊ§°Ü£¡\n");
+      printf("åˆå§‹åŒ–Winsockå¤±è´¥ï¼\n");
 	  return -1;
 	}
 
 	Socket=socket(AF_INET,SOCK_STREAM,0);
     if (Socket==INVALID_SOCKET)
 	{
-       printf("´´½¨SocketÊ§°Ü£¡\n");
+       printf("åˆ›å»ºSocketå¤±è´¥ï¼\n");
 	   WSACleanup();
 	   return -2;
 	}
 
-	char TempUrl[256];//´ÓURLÉ¾³ıĞ­Òé
+	char TempUrl[256];//ä»URLåˆ é™¤åè®®
     memset(TempUrl,0,sizeof(TempUrl));
 	if (strstr(url,"http://"))
 		strcpy(TempUrl,url+7);
 	else
 		strcpy(TempUrl,url);
 
-	int UrlPos;//´ÓURLÌáÈ¡Ö÷»úÃû
+	int UrlPos;//ä»URLæå–ä¸»æœºå
 	char HostName[256];
 	char FilePath[256];
 	UrlPos=strchr(TempUrl,'/')-TempUrl;
 	
 	memset(HostName,0,sizeof(HostName));
 	memset(FilePath,0,sizeof(FilePath));
-	if (UrlPos<0)//Ä¬ÈÏÖ÷Ò³
+	if (UrlPos<0)//é»˜è®¤ä¸»é¡µ
 	{ 
 		strcpy(HostName,TempUrl);
 		strcpy(FilePath,"/");
@@ -73,7 +75,7 @@ int browse(char *url)
 		strcpy(FilePath,TempUrl+UrlPos);
 	}
 	
-	int IpAddress;//ÅĞ¶ÏÓòÃû»òIPµØÖ·
+	int IpAddress;//åˆ¤æ–­åŸŸåæˆ–IPåœ°å€
 	IpAddress=inet_addr(HostName);
 	if (IpAddress==INADDR_NONE)
 	{
@@ -92,13 +94,13 @@ int browse(char *url)
 	nConnect=connect(Socket,(sockaddr*)&serveraddr,sizeof(sockaddr));
 	if (nConnect==SOCKET_ERROR)
 	{
-      printf("Á¬½Ó½¨Á¢Ê§°Ü£¡\n");
+      printf("è¿æ¥å»ºç«‹å¤±è´¥ï¼\n");
 	  closesocket(Socket);
 	  WSACleanup();
 	  return -3;
 	}
 
-	memset(Command,0,MAX_SIZE);//Éú³ÉGETÃüÁî
+	memset(Command,0,MAX_SIZE);//ç”ŸæˆGETå‘½ä»¤
 	memcpy(Command,"GET ",4);
 	memcpy(Command+4,FilePath,strlen(FilePath));
 	memcpy(Command+4+strlen(FilePath)," HTTP/1.1\r\nHost: ",17);
@@ -106,11 +108,11 @@ int browse(char *url)
 	memcpy(Command+21+strlen(FilePath)+strlen(HostName),"\r\n\r\n",4);
 
 	
-	int nSend;//·¢ËÍGETÃüÁî
+	int nSend;//å‘é€GETå‘½ä»¤
 	nSend=send(Socket,Command,strlen(Command),0);
 	if (nSend==SOCKET_ERROR)
 	{
-       printf("Socket·¢ËÍÊ§°Ü!\n");
+       printf("Socketå‘é€å¤±è´¥!\n");
 	   closesocket(Socket);
 	   WSACleanup();
 	   return -4;
@@ -127,11 +129,11 @@ int browse(char *url)
 	while (true)
 	{
        memset(Respond,0,MAX_SIZE);
-	   int nRecv;//½ÓÊÕGETÏìÓ¦
+	   int nRecv;//æ¥æ”¶GETå“åº”
 	   nRecv=recv(Socket,Respond,MAX_SIZE,0);
        if (nRecv==SOCKET_ERROR)
 	   {
-         printf("Socket½ÓÊÕÊ§°Ü£¡\n");
+         printf("Socketæ¥æ”¶å¤±è´¥ï¼\n");
 		 closesocket(Socket);
 		 WSACleanup();
 		 return -5;
@@ -144,11 +146,11 @@ int browse(char *url)
 		   break;
 	}
 
-	char RespCode[4];//´ÓÏìÓ¦ÖĞ½âÎöÏìÓ¦Âë
+	char RespCode[4];//ä»å“åº”ä¸­è§£æå“åº”ç 
 	memset(RespCode,0,sizeof(RespCode));
 	strncpy(RespCode,RecvBuf+9,3);
 	
-	/*int HtmlPos;//´ÓÏìÓ¦ÖĞÌáÈ¡HTML
+	/*int HtmlPos;//ä»å“åº”ä¸­æå–HTML
 	char HeadText[1024];
 	memset(HeadText,0,sizeof(HeadText));
 	char *HtmlText=0;
@@ -168,7 +170,7 @@ int browse(char *url)
 	}
 	else
 	{
-      printf("GETÏìÓ¦´íÎó£¡\n");
+      printf("GETå“åº”é”™è¯¯ï¼\n");
 	  closesocket(Socket);
 	  WSACleanup();
 	  return -6;
@@ -184,7 +186,7 @@ int browse(char *url)
 	}
 	else
 	{
-       printf("GETÏìÓ¦´íÎó£¡\n");
+       printf("GETå“åº”é”™è¯¯ï¼\n");
 	  closesocket(Socket);
 	  WSACleanup();
 	  return -6;
